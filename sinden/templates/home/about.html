@@ -1,46 +1,107 @@
 {% extends "base.html" %}
 {% block title %}祠の由来 | Placaの祠{% endblock %}
-{% block content %}
-<h1><ruby>祠<rt>ほこら</rt></ruby>の由来</h1>
-<p class="meaning-note">祠（ほこら）とは、神さまをまつる小さなお社（やしろ）のこと。Placaの祠は、喧嘩したふたりが一緒に訪れる、小さな祠です。</p>
-<p>
-  古代ローマのパラティーノの丘には、喧嘩したふたりが一緒に訪れる、女神ヴィリプラカの小さな祠がありました。
-  祠には女神の像があるだけで、神官も誰もいません。
-</p>
-<p>掟はひとつ。<strong>「女神に訴えるのは、一時に一人」</strong>。</p>
-<p>
-  一方が訴えている間、もう一方は黙って聴くしかありません。黙って聴いているうちに、相手の言い分にも理があることに気づきます。
-  訴えている本人も、静かな祠に響く自分の声を聴き、少しずつ落ち着いていきます。
-  何も肯定しない女神の前で、何も言い返さない相手に、怒り続けるのは難しいのです。
-</p>
-<p>
-  これをくり返すうちに、ふたりは仲良く祠を後にする。女神の判決は、いつも「和解」でした。
-</p>
-<p>
-  この祠は、古代の文献にただ1か所記録が残るだけで、遺跡も写真も残っていません。
-  だから、スマホの中に建て直しました。
-</p>
-<p>
-  パラティーノの丘には、大きな神殿がいくつも並んでいました。祠は、その神殿の風景の一角にある、小さな聖所です。
-  祠の背景に古代ローマの神殿が見えるのは、そのためです。
-</p>
-<p>
-  名前の「Placa（プラカ）」は、女神の名ヴィリプラカと、ラテン語の「placare（鎮める・なだめる）」から取りました。
-</p>
-<h2>顔のない女神</h2>
-<p>
-  ヴィリプラカの像は、現存していません。この祠では、ローマ時代の大理石の女性像を、女神の姿として迎えました。
-  長い年月のあいだに頭部は失われ、女神には顔がありません。
-</p>
-<p>
-  けれど、それこそが祠の女神にふさわしい姿だと考えています。
-  うなずきもしない。眉をひそめもしない。どちらの味方にもならない。
-  表情で肯定も否定もしない女神の前では、だれかの顔色をうかがう必要はありません。
-  ただ、自分の言葉と向き合うだけです。
-</p>
+{% block body_class %}landing about{% endblock %}
+{% block head %}
+<script>document.documentElement.classList.add("js")</script>
+{% endblock %}
 
-<p><small>
-  出典：塩野七生『ローマ人の物語』第1巻、ウァレリウス・マクシムス『著名言行録』第2巻<br>
-  像の写真：メトロポリタン美術館所蔵「大理石の女性像」（ローマ帝政期、1〜2世紀）。パブリックドメイン（The Met Open Access）
-</small></p>
+{% block hero %}
+<section class="lp-hero about-hero" aria-label="祠の由来">
+  <div class="lp-sky" aria-hidden="true"></div>
+  <div class="lp-scene{% if static_exists('img/bg-night.jpg') %} with-photo{% endif %}" aria-hidden="true">
+    {% if static_exists('img/bg-night.jpg') %}
+      <div class="lp-photo" style="background-image:url('{{ url_for('static', filename='img/bg-night.jpg') }}')"></div>
+    {% endif %}
+    <div class="lp-lights">
+      <span class="flame"></span>
+      <span class="flame"></span>
+    </div>
+  </div>
+  <div class="lp-copy container">
+    <p class="lp-label">ORIGIN</p>
+    <h1><ruby>祠<rt>ほこら</rt></ruby>の由来</h1>
+    <p class="lp-meaning">祠（ほこら）とは、神さまをまつる小さなお社のこと</p>
+    <p class="lp-sub">2000年前、ローマの丘の上に、<br>喧嘩したふたりが訪れる小さな祠がありました。</p>
+  </div>
+</section>
+
+<section class="lp-band lp-okite">
+  <div class="container">
+    <p class="lp-label">パラティーノの丘</p>
+    <div class="lp-text reveal">
+      <p>古代ローマ。皇帝の宮殿や大きな神殿が並ぶパラティーノの丘の一角に、女神ヴィリプラカの小さな祠がありました。</p>
+      <p>祠には女神の像があるだけで、神官も誰もいません。<br>喧嘩をした夫婦は、ふたりで連れ立ってここを訪れました。</p>
+    </div>
+    <p class="lp-label about-gap">祠の掟</p>
+    <blockquote class="lp-tablet reveal">女神に訴えるのは、<br>一時に一人。</blockquote>
+    <div class="lp-text reveal">
+      <p>一方が訴えている間、もう一方は黙って聴くしかありません。黙って聴いているうちに、相手の言い分にも理があることに気づきます。</p>
+      <p>訴えている本人も、静かな祠に響く自分の声を聴き、少しずつ落ち着いていきます。</p>
+      <p><strong>何も肯定しない女神の前で、何も言い返さない相手に、怒り続けるのは難しいのです。</strong></p>
+    </div>
+  </div>
+</section>
+
+<section class="lp-band about-verdict">
+  <div class="container">
+    <p class="lp-label reveal">女神の判決</p>
+    <p class="about-verdict-word reveal">和解</p>
+    <p class="lp-text reveal">これをくり返すうちに、ふたりは仲良く祠を後にする。<br>女神の判決は、いつも「和解」でした。</p>
+  </div>
+</section>
+
+<section class="lp-band lp-faceless">
+  <div class="container lp-faceless-inner">
+    <div class="lp-faceless-statue reveal">{% include "_goddess.html" %}</div>
+    <div class="lp-faceless-text reveal">
+      <p class="lp-label">顔のない女神</p>
+      <h2>女神には、顔がありません。</h2>
+      <p>ヴィリプラカの像は、現存していません。この祠では、ローマ時代の大理石の女性像を、女神の姿として迎えました。長い年月のあいだに、頭部は失われています。</p>
+      <p>けれど、それこそが祠の女神にふさわしい姿だと考えています。<br>
+        うなずきもしない。眉をひそめもしない。どちらの味方にもならない。</p>
+      <p><strong>顔のない女神の前では、だれかの顔色をうかがう必要はありません。</strong><br>
+        ただ、自分の言葉と向き合うだけです。</p>
+    </div>
+  </div>
+</section>
+
+<section class="lp-band about-name">
+  <div class="container">
+    <p class="lp-label">名前の由来</p>
+    <p class="about-latin reveal" lang="la"><span>VIRI</span><strong>PLACA</strong></p>
+    <div class="lp-text reveal">
+      <p>女神の名ヴィリプラカは「夫（viri）を、なだめる（placa）女神」という意味です。</p>
+      <p>「Placa（プラカ）」は、その名と、ラテン語の <span lang="la">placare</span>（鎮める・なだめる）から取りました。<br>どちらか一方ではなく、ふたりの気持ちを鎮める祠でありたいと考えています。</p>
+    </div>
+  </div>
+</section>
+
+<section class="lp-band about-rebuild">
+  <div class="container">
+    <p class="lp-label">スマホの中に</p>
+    <h2 class="reveal">遺跡も、写真も、<br>残っていません。</h2>
+    <div class="lp-text reveal">
+      <p>この祠は、古代の文献にただ1か所、記録が残るだけです。だから、スマホの中に建て直しました。</p>
+      <p>祠の背景に古代ローマの神殿が見えるのは、神殿が並ぶ丘の一角に、この小さな祠があったからです。</p>
+    </div>
+    <p class="reveal about-cta">
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('home.index') }}" role="button">ホームへ戻る</a>
+      {% else %}
+        <a href="{{ url_for('auth.register') }}" role="button">ふたりで登録する</a>
+      {% endif %}
+    </p>
+    <p class="about-source"><small>
+      出典：塩野七生『ローマ人の物語』第1巻、ウァレリウス・マクシムス『著名言行録』第2巻<br>
+      像の写真：メトロポリタン美術館所蔵「大理石の女性像」（ローマ帝政期、1〜2世紀）。パブリックドメイン（The Met Open Access）
+    </small></p>
+  </div>
+</section>
+{% endblock %}
+
+{% block flashes %}{% endblock %}
+{% block content %}{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='landing.js') }}"></script>
 {% endblock %}

@@ -72,3 +72,37 @@ def test_shrine_requires_pair(app, login_as):
     res = login_as(solo).post("/shrine/invite", data={"theme": "night"})
     assert res.status_code == 302
     assert res.headers["Location"].endswith("/")
+
+
+def test_ホームの状態は相手の参加と誘いで変わる(pair, aoi, login_as):
+    a = login_as(aoi)
+    v1 = a.get("/home/state").get_json()["version"]
+    assert f'data-version="{v1}"' in a.get("/").get_data(as_text=True)
+
+    hikaru = make_user("b@example.com", "ひかる", pair)
+    v2 = a.get("/home/state").get_json()["version"]
+    assert v2 != v1
+
+    login_as(hikaru).post("/shrine/invite", data={"theme": "night"})
+    assert a.get("/home/state").get_json()["version"] != v2
+
+
+def test_祠の由来はログインしてもしなくても開ける(aoi, login_as, app):
+    for client in (app.test_client(), login_as(aoi)):
+        text = client.get("/about").get_data(as_text=True)
+        assert "女神に訴えるのは" in text
+        assert "顔のない女神" in text
+    assert "ホームへ戻る" in text  # ログインしているとき
+
+
+def test_ホームの状態はログインが必要(app):
+    res = app.test_client().get("/home/state")
+    assert res.status_code == 302
+    assert "/login" in res.headers["Location"]
+
+
+def test_ペアがなければホームは自動で確かめない(app, login_as):
+    solo = make_user("c@example.com", "ひとり")
+    client = login_as(solo)
+    assert client.get("/home/state").get_json()["version"] == "none"
+    assert "home.js" not in client.get("/").get_data(as_text=True)

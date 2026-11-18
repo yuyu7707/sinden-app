@@ -46,6 +46,7 @@ S5〜S8 は同じ URL で、祠の状態（`Visit.status`）によってテン�
 | `/shrine/<id>/leave` | POST | ペアの2人 | 祠を出よう（`stay=1` で取り消し）。ふたりそろうと和解 |
 | `/shrine/<id>/keep` | POST | ペアの2人 | 記録を残す／残さない |
 | `/shrine/<id>/state` | GET | ペアの2人 | 3秒ごとに呼ばれる（JSON）。画面を作り直すか、相手の灯り、残り時間 |
+| `/home/state` | GET | ペアのメンバー | ホームで5秒ごとに呼ばれる（JSON）。相手の参加・誘い・取り消しがあれば画面を作り直す（祠に入るのは「応じる」を押したときだけ） |
 | `/billing/checkout/<kind>` | POST | ペアのメンバー | `solo`／`pair`／`mirrors` の決済ページへ（Stripe） |
 | `/billing/portal` | POST | 契約している本人 | 解約・カード変更の画面へ（Stripe） |
 | `/webhooks/stripe` | POST | Stripe | 支払いの確定、契約の変更・解約を受け取る（CSRF の対象外。署名を確かめる） |

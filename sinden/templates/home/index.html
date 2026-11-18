@@ -2,6 +2,9 @@
 {% from "_form_errors.html" import field %}
 {% block content %}
 <h1>{{ current_user.name }}さん</h1>
+{% if pair is not none %}
+  <div hidden data-home-state="{{ url_for('home.state') }}" data-version="{{ home_version }}"></div>
+{% endif %}
 
 {% if pair is none %}
   <article>
@@ -81,4 +84,7 @@
     <p><small>女神の鏡：今月あと {{ mirrors_left }} 回{% if current_user.plan_source %}（{{ current_user.plan_source }}）{% endif %}</small></p>
   {% endif %}
 {% endif %}
+{% endblock %}
+{% block scripts %}
+{% if pair is not none %}<script src="{{ url_for('static', filename='home.js') }}"></script>{% endif %}
 {% endblock %}

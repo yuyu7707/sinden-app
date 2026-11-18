@@ -20,6 +20,30 @@ def active_visit(pair: Pair | None) -> Visit | None:
     )
 
 
+def home_version(user) -> str:
+    """ホームの表示が変わる出来事（相手の参加・誘い・取り消し）から作る値"""
+    pair = user.pair
+    if pair is None:
+        return "none"
+    partner = user.partner
+    visit = active_visit(pair)
+    return ":".join(
+        str(v)
+        for v in (
+            pair.id,
+            partner.id if partner else "-",
+            visit.id if visit else "-",
+            visit.status if visit else "-",
+        )
+    )
+
+
+@bp.route("/home/state")
+@login_required
+def state():
+    return {"version": home_version(current_user)}
+
+
 @bp.route("/")
 def index():
     if not current_user.is_authenticated:
@@ -40,6 +64,7 @@ def index():
         invite_form=InviteForm(),
         join_form=JoinPairForm(),
         unread=unread,
+        home_version=home_version(current_user),
         mirrors_left=plans.mirrors_left_this_month(current_user) if pair else None,
     )
 

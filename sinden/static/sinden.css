@@ -730,3 +730,34 @@ ruby rt {
 .check-note { margin-top: 0.6rem; padding: 0.6rem 0.9rem; border-left: 3px solid var(--gold); background: rgba(217, 163, 91, 0.06); }
 .check-note p, .check-note ul { margin-bottom: 0.3rem; }
 .check-note ul { padding-left: 1.2rem; }
+
+/* ===== 祠の由来（トップページと同じ夜の祠の世界） ===== */
+.about-hero { height: 70svh; min-height: 460px; max-height: 720px; }
+.about-hero .lp-scene { animation-duration: 3.5s; }
+.about-hero .lp-lights { animation: lp-lights 3s ease both; }
+.about-hero .lp-copy { animation-delay: 0.6s; padding-top: clamp(6rem, 18vh, 10rem); }
+.about-hero .lp-copy h1 { font-family: var(--serif); letter-spacing: 0.15em; }
+.about-gap { margin-top: 3.5rem; }
+.about-verdict { background: radial-gradient(ellipse at 50% 60%, rgba(120, 70, 30, 0.4), transparent 60%), #0e0e17; }
+.about-verdict-word {
+  font-family: var(--serif);
+  font-size: clamp(3rem, 12vw, 5.5rem);
+  letter-spacing: 0.5em;
+  padding-left: 0.5em; /* 字間のぶん、中央に見えるように */
+  color: #f6eedd;
+  text-shadow: 0 0 28px rgba(255, 170, 80, 0.55);
+  margin: 0 0 1.5rem;
+}
+.about-name { background: linear-gradient(#0e0e17, #14121a); }
+.about-latin {
+  font-family: var(--serif);
+  font-size: clamp(2rem, 9vw, 4rem);
+  letter-spacing: 0.25em;
+  margin-bottom: 2rem;
+  color: #8e8678;
+}
+.about-latin strong { color: var(--gold); font-weight: 500; text-shadow: 0 0 18px rgba(217, 163, 91, 0.45); }
+.about-rebuild { background: radial-gradient(ellipse at 50% 120%, rgba(120, 70, 30, 0.45), transparent 60%), #14121a; }
+.about-rebuild h2 { font-size: clamp(1.5rem, 4vw, 2.2rem); line-height: 1.6; }
+.about-cta { margin-top: 2rem; }
+.about-source { max-width: 40rem; margin: 3rem auto 0; color: var(--pico-muted-color); line-height: 1.8; }
