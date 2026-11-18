@@ -5,7 +5,8 @@
   3. 図（SVG）
 #}
 {% if static_exists('img/goddess.png') %}
-  <img src="{{ url_for('static', filename='img/goddess.png') }}" alt="女神ヴィリプラカの像（イメージ）">
+  <img class="goddess-cut" src="{{ url_for('static', filename='img/goddess.png') }}"
+       alt="顔のない女神の像（ローマ時代の大理石の女性像）">
 {% elif static_exists('img/goddess.jpg') %}
   <img class="goddess-photo" src="{{ url_for('static', filename='img/goddess.jpg') }}"
        alt="顔のない女神の像（ローマ時代の大理石の女性像）">

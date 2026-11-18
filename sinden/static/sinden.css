@@ -761,3 +761,17 @@ ruby rt {
 .about-rebuild h2 { font-size: clamp(1.5rem, 4vw, 2.2rem); line-height: 1.6; }
 .about-cta { margin-top: 2rem; }
 .about-source { max-width: 40rem; margin: 3rem auto 0; color: var(--pico-muted-color); line-height: 1.8; }
+
+/* ===== 女神の像（切り抜き goddess.png。美術館の灰色の壁を透明にしたもの） ===== */
+.goddess-cut { filter: sepia(0.55) saturate(1.3) brightness(0.92) contrast(1.15); }
+.theme-morning .goddess-cut { filter: sepia(0.35) saturate(1.15) brightness(1.08) contrast(1.12); }
+
+/* ===== ローマの朝：灰色の像が灰色の神殿に溶けないように =====
+   背景は朝もやのようにぼかして淡く、像は朝日の色と足元の影で手前に浮かせる */
+.theme-morning .scene.has-photo::before {
+  filter: blur(2.5px) saturate(0.8) brightness(1.04);
+  transform: scale(1.03); /* ぼかした端が透けないように */
+}
+.theme-morning .scene.has-photo .goddess {
+  filter: drop-shadow(0 8px 16px rgba(30, 20, 10, 0.5));
+}
