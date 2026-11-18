@@ -909,3 +909,67 @@ body.learn main { max-width: 52rem; }
 .parchment-locked { text-align: center; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px dashed rgba(154, 106, 44, 0.4); }
 .parchment-end { text-align: center; color: #b08a50; font-size: 1.5rem; margin-top: 2rem; }
 .learn-credit { text-align: center; color: #8a7a62; }
+
+/* ===== 学び：古紙らしさを強める（スマホでも分かるように、カード自体を古い紙に） =====
+   --paper：紙の繊維の細かい粒（SVG のノイズ。画像ファイルは使わない） */
+body.learn {
+  --paper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.35 0 0 0 0 0.24 0 0 0 0 0.1 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+  --paper-stain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.008' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.3 0 0 0 0 0.1 0 0 0 0.9 -0.35'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)' opacity='0.5'/%3E%3C/svg%3E");
+  background-color: #e6d2a6;
+  background-image:
+    radial-gradient(ellipse at 50% 40%, transparent 50%, rgba(90, 55, 15, 0.35) 100%),
+    var(--paper-stain),
+    var(--paper);
+}
+
+/* 一覧：左右に木の軸が付いた巻物 */
+.scroll {
+  position: relative;
+  margin: 0 0.7rem;
+  border: none;
+  border-radius: 2px;
+  background-color: #efdcb2;
+  background-image:
+    linear-gradient(90deg, rgba(110, 70, 20, 0.28), transparent 12%, transparent 88%, rgba(110, 70, 20, 0.28)),
+    var(--paper-stain),
+    var(--paper);
+  box-shadow:
+    inset 0 0 22px rgba(120, 75, 20, 0.35),
+    0 3px 8px rgba(70, 45, 15, 0.25);
+}
+.scroll:hover, .scroll:focus-visible {
+  box-shadow: inset 0 0 22px rgba(120, 75, 20, 0.35), 0 10px 22px rgba(70, 45, 15, 0.3);
+}
+.scroll::before, .scroll::after {
+  content: "";
+  position: absolute;
+  top: -6px; bottom: -6px;
+  width: 12px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #4a2c12, #8a5a2c 45%, #5a3416);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+}
+.scroll::before { left: -10px; }
+.scroll::after { right: -10px; }
+.scroll-num { color: #7a4a18; border-right-color: rgba(120, 75, 20, 0.35); }
+.scroll-summary { color: #5a4630; }
+
+/* 記事：縁の焼けた羊皮紙 */
+.parchment {
+  border: none;
+  border-radius: 3px;
+  background-color: #efdcb2;
+  background-image:
+    radial-gradient(ellipse at 50% 45%, rgba(255, 248, 230, 0.55), transparent 70%),
+    var(--paper-stain),
+    var(--paper);
+  box-shadow:
+    inset 0 0 70px rgba(115, 70, 18, 0.45),
+    inset 0 0 12px rgba(90, 50, 10, 0.35),
+    0 14px 34px rgba(70, 45, 15, 0.3);
+}
+.parchment td { background: rgba(255, 248, 230, 0.45); }
+.parchment-summary { color: #5a4630; }
+@media (max-width: 600px) {
+  .parchment { padding: 1.6rem 1.2rem; box-shadow: inset 0 0 40px rgba(115, 70, 18, 0.45), inset 0 0 10px rgba(90, 50, 10, 0.35), 0 10px 24px rgba(70, 45, 15, 0.3); }
+}
