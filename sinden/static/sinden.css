@@ -973,3 +973,22 @@ body.learn {
 @media (max-width: 600px) {
   .parchment { padding: 1.6rem 1.2rem; box-shadow: inset 0 0 40px rgba(115, 70, 18, 0.45), inset 0 0 10px rgba(90, 50, 10, 0.35), 0 10px 24px rgba(70, 45, 15, 0.3); }
 }
+
+/* 学び：ページの背景はほかのページと同じ色にそろえ、古紙の色は巻物と紙面だけにする */
+body.learn {
+  background-color: var(--pico-background-color);
+  background-image: none;
+}
+.learn-intro { color: var(--pico-muted-color); }
+/* Pico が article の header・footer に塗る別の背景色を外し、紙面と同じ色にする */
+.parchment > header,
+.parchment > footer {
+  background: transparent;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+.parchment > header { margin-top: 0; padding-top: 0; }
+.parchment > footer { margin-bottom: 0; padding-bottom: 0; border-top: none; }
+.parchment-end { color: #6b4a20; }
