@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from "_form_errors.html" import field %}
+{% block title %}手紙を書く | Placaの祠{% endblock %}
+{% block content %}
+<h1>{{ current_user.partner.name }}さんへの手紙</h1>
+<details>
+  <summary>書き方のヒント（DESC法・Iメッセージ）</summary>
+  <ol>
+    <li><strong>感謝をひとつ</strong>：相手にありがたいと思っていること</li>
+    <li><strong>起きたこと</strong>（D）：評価の言葉を入れず、事実だけ</li>
+    <li><strong>わたしの気持ち</strong>（E）：「わたしは〜と感じた」</li>
+    <li><strong>してほしいこと</strong>（S）：具体的に1つだけ</li>
+    <li><strong>これから</strong>（C）：「〜できたら嬉しい」で結ぶ</li>
+  </ol>
+  <p><small>書いたら一晩おいて読み返すと、言い過ぎに気づけます。<a href="{{ url_for('learn.show', slug='letter') }}">手紙で伝える</a></small></p>
+</details>
+<form method="post">
+  {{ form.hidden_tag() }}
+  {{ field(form.title) }}
+  {{ field(form.body, rows=14) }}
+  <button type="submit">届ける</button>
+</form>
+{% endblock %}

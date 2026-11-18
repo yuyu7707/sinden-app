@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}手紙 | Placaの祠{% endblock %}
+{% block content %}
+<h1>手紙</h1>
+<p>顔を見て言えないことを、時間をかけて言葉にして届けます。届いた手紙は画面で読めるほか、PDF にして印刷できます。</p>
+{% if current_user.is_premium %}
+  <a href="{{ url_for('letters.new') }}" role="button">{{ current_user.partner.name }}さんに手紙を書く</a>
+{% else %}
+  <p><small>届いた手紙は無料で読めます。手紙を書いて届けるのは<a href="{{ url_for('billing.index') }}">プラン</a>で使えます。</small></p>
+{% endif %}
+
+<h2>届いた手紙</h2>
+{% if received %}
+  <ul>
+    {% for l in received %}
+      <li>
+        <a href="{{ url_for('letters.show', letter_id=l.id) }}">{{ l.title }}</a>
+        <small>{{ l.created_at|jdate }}{% if not l.read_at %} ・<mark>未読</mark>{% endif %}</small>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>まだ届いていません。</p>
+{% endif %}
+
+<h2>送った手紙</h2>
+{% if sent %}
+  <ul>
+    {% for l in sent %}
+      <li>
+        <a href="{{ url_for('letters.show', letter_id=l.id) }}">{{ l.title }}</a>
+        <small>{{ l.created_at|jdate }}・{{ '既読' if l.read_at else '未読' }}</small>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>まだ送っていません。</p>
+{% endif %}
+{% endblock %}

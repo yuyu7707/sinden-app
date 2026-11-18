@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}お支払い | Placaの祠{% endblock %}
+{% block content %}
+{% if purchase.status == 'paid' %}
+  <h1>ありがとうございます</h1>
+  <p>{{ purchase.label }}{% if purchase.kind == 'mirrors' %}（{{ purchase.amount|yen }}）のお支払いが完了しました。女神の鏡を追加しました。{% else %}（{{ purchase.amount|yen }} / 月）のお支払いが完了しました。{% if purchase.kind == 'pair' %}ふたりとも、すべての機能を使えます。{% else %}あなたは、すべての機能を使えます。{% endif %}{% endif %}</p>
+{% else %}
+  <h1>お支払いを確認しています</h1>
+  <p>確認が済むまで、少し時間がかかることがあります。しばらくしてから、このページを開き直してください。</p>
+{% endif %}
+<p><a href="{{ url_for('home.index') }}" role="button">ホームへ</a></p>
+{% endblock %}

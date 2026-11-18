@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ja" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Placaの祠｜喧嘩を、終わりにしないための祠{% endblock %}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', filename='sinden.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <header class="container no-print site-header">
+    <nav>
+      <ul>
+        {% block brand %}
+        <li>
+          <a href="{{ url_for('home.index') }}" class="brand">
+            <span class="brand-flame" aria-hidden="true"></span>Placaの祠
+          </a>
+        </li>
+        {% endblock %}
+      </ul>
+      <ul>
+        {% if current_user.is_authenticated %}
+          <li><a href="{{ url_for('records.index') }}">記録</a></li>
+          <li><a href="{{ url_for('letters.index') }}">手紙</a></li>
+          <li><a href="{{ url_for('learn.index') }}">学び</a></li>
+          <li><a href="{{ url_for('billing.index') }}">プラン</a></li>
+          <li>
+            <form method="post" action="{{ url_for('auth.logout') }}" style="margin:0">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="secondary outline small">ログアウト</button>
+            </form>
+          </li>
+        {% else %}
+          <li><a href="{{ url_for('learn.index') }}">学び</a></li>
+          <li><a href="{{ url_for('auth.login') }}">ログイン</a></li>
+          <li><a href="{{ url_for('auth.register') }}">登録</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+  </header>
+  {% block hero %}{% endblock %}
+  <main class="container">
+    {% block flashes %}
+      {% for message in get_flashed_messages() %}
+        <article class="flash no-print">{{ message }}</article>
+      {% endfor %}
+    {% endblock %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="container no-print site-footer">
+    <small>
+      <a href="{{ url_for('home.about') }}">祠の由来</a> ・
+      <a href="{{ url_for('home.help_lines') }}">ひとりで抱えないで（相談窓口）</a>
+    </small>
+  </footer>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

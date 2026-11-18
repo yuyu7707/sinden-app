@@ -1,0 +1,61 @@
+{#
+  祠の舞台：背景（夜の祠／ローマの朝）、女神の像、足元のふたりの灯り。
+  static/img/ に CC0 の写真を置くと、図の代わりに写真を使う（README 参照）。
+#}
+{% macro stage(visit, partner, partner_present, intro=false) %}
+{% set bg = 'img/bg-' ~ visit.theme ~ '.jpg' %}
+<div class="stage theme-{{ visit.theme }}{% if intro %} intro{% endif %}"
+     data-visit="{{ visit.id }}" aria-label="{{ visit.theme_label }}">
+  {# 写真は ::before に敷く（位置をずらして神殿を中央に置くため。CSS の --photo で渡す） #}
+  <div class="scene{% if static_exists(bg) %} has-photo{% endif %}"
+       {% if static_exists(bg) %}style="--photo:url('{{ url_for('static', filename=bg) }}')"{% endif %}>
+    {% if not static_exists(bg) %}
+      {% if visit.theme == 'morning' %}
+        <svg class="backdrop" viewBox="0 0 400 300" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+          <ellipse cx="200" cy="330" rx="320" ry="110" fill="#c9b98f"/>
+          <ellipse cx="60" cy="300" rx="160" ry="70" fill="#b7a77c"/>
+          <g fill="#f3ead8" stroke="#d8ccb2">
+            <polygon points="90,95 200,55 310,95"/>
+            <rect x="95" y="95" width="210" height="10"/>
+            {% for x in [105, 145, 185, 225, 265] %}<rect x="{{ x }}" y="105" width="18" height="120"/>{% endfor %}
+            <rect x="88" y="225" width="224" height="10"/>
+          </g>
+        </svg>
+      {% else %}
+        <svg class="backdrop" viewBox="0 0 400 300" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+          <g fill="#2a2a3a" stroke="#3a3a4e">
+            <polygon points="70,70 200,30 330,70"/>
+            <rect x="75" y="70" width="250" height="12"/>
+            <rect x="85" y="82" width="26" height="200"/>
+            <rect x="289" y="82" width="26" height="200"/>
+          </g>
+        </svg>
+      {% endif %}
+    {% endif %}
+
+    <div class="goddess">
+      {% include "_goddess.html" %}
+    </div>
+  </div>
+
+  {#
+    灯り：画面を開いていれば灯る（on）。訴えの間は、話す番の灯りが強く光り（speaking）、
+    聴く側は控えめになる（listening）。番が替わると画面が作り直されるので、ここで決めてよい
+  #}
+  {% set pleading = visit.status == 'pleading' %}
+  {% set i_speak = pleading and visit.current_speaker_id == current_user.id %}
+  {% set partner_speaks = pleading and visit.current_speaker_id == partner.id %}
+  <div class="lights{% if pleading %} in-turn{% endif %}">
+    <div class="light on{% if i_speak %} speaking{% elif pleading %} listening{% endif %}" title="あなた">
+      <span class="flame"></span>
+      <small>{{ current_user.name }}</small>
+      {% if pleading %}<small class="turn-label">{{ '話す' if i_speak else '聴く' }}</small>{% endif %}
+    </div>
+    <div class="light partner{% if partner_present %} on{% endif %}{% if partner_speaks %} speaking{% elif pleading %} listening{% endif %}" title="{{ partner.name }}">
+      <span class="flame"></span>
+      <small>{{ partner.name }}</small>
+      {% if pleading %}<small class="turn-label">{{ '話す' if partner_speaks else '聴く' }}</small>{% endif %}
+    </div>
+  </div>
+</div>
+{% endmacro %}

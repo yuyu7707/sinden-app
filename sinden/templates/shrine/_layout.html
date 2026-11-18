@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% from "shrine/_stage.html" import stage with context %}
+{% block title %}{{ visit.theme_label }} | Placaの祠{% endblock %}
+{% block body_class %}in-shrine theme-{{ visit.theme }}{% endblock %}
+{% block content %}
+<div class="shrine"
+     data-state-url="{{ url_for('shrine.state', visit_id=visit.id) }}"
+     data-version="{{ visit.version() }}">
+  {{ stage(visit, partner, partner_present, intro=intro) }}
+  <section class="panel">
+    {% block panel %}{% endblock %}
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='shrine.js') }}"></script>
+{% endblock %}

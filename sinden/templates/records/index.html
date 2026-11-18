@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}和解の記録 | Placaの祠{% endblock %}
+{% block content %}
+<h1>和解の記録</h1>
+{% if visits %}
+  <ul class="records">
+    {% for v in visits %}
+      <li>
+        <a href="{{ url_for('records.show', visit_id=v.id) }}">{{ v.ended_at|jdate }}</a>
+        <small>{{ v.theme_label }}・訴え {{ v.pleas|length }} 回</small>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>まだ記録はありません。和解のあと、ふたりとも「残す」を選ぶと、ここに残ります。</p>
+{% endif %}
+{% if hidden %}
+  <article>
+    これより前の記録が {{ hidden }} 件あります。
+    <a href="{{ url_for('billing.index') }}">プランに入ると、すべて振り返れます。</a>
+  </article>
+{% endif %}
+{% endblock %}

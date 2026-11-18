@@ -1,0 +1,23 @@
+{% extends "shrine/_layout.html" %}
+{% block panel %}
+{% if me_role == 'inviter' %}
+  <h2>{{ partner.name }}さんを、祠に誘いました</h2>
+  <p class="presence">{{ partner.name }}さんが応じると、祠が開きます。</p>
+  <form method="post" action="{{ url_for('shrine.cancel', visit_id=visit.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="secondary outline">誘いを取り消す</button>
+  </form>
+{% else %}
+  <h2>{{ partner.name }}さんが、祠に誘っています</h2>
+  <div class="grid">
+    <form method="post" action="{{ url_for('shrine.accept', visit_id=visit.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit">応じて祠へ入る</button>
+    </form>
+    <form method="post" action="{{ url_for('shrine.cancel', visit_id=visit.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="secondary outline">いまは見送る</button>
+    </form>
+  </div>
+{% endif %}
+{% endblock %}

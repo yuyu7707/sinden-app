@@ -1,0 +1,19 @@
+{% extends "shrine/_layout.html" %}
+{% block panel %}
+<h2>女神ヴィリプラカの祠の掟</h2>
+<ol class="rules">
+  <li><strong>女神に訴えるのは、一時に一人。</strong></li>
+  <li>相手が訴えている間は、黙って聴く。</li>
+  <li>1回の訴えは5分まで。途中で終えてもよい。</li>
+  <li>ふたりとも祠を出ると決めたら、和解とする。</li>
+</ol>
+<p><small>訴え終えると、<strong>あなたにだけ</strong>「女神の鏡」が映ります。あなたの訴えを、肯定も否定もせずに映し返すものです。相手には見えません。</small></p>
+{% if visit.flag('agreed', current_user) %}
+  <p class="presence">{{ partner.name }}さんが掟に従うのを待っています…</p>
+{% else %}
+  <form method="post" action="{{ url_for('shrine.agree', visit_id=visit.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit">掟に従う</button>
+  </form>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% from "_form_errors.html" import field %}
+{% block title %}登録 | Placaの祠{% endblock %}
+{% block content %}
+<h1>登録</h1>
+<p>関係が良いうちに、ふたりで登録しておきましょう。いざという時の、お守りになります。</p>
+<form method="post">
+  {{ form.hidden_tag() }}
+  {{ field(form.name) }}
+  {{ field(form.email) }}
+  {{ field(form.password) }}
+  <button type="submit">登録する</button>
+</form>
+<p>登録済みの方は <a href="{{ url_for('auth.login') }}">ログイン</a></p>
+{% endblock %}

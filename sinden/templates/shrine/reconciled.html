@@ -1,0 +1,23 @@
+{% extends "shrine/_layout.html" %}
+{% block panel %}
+<h2 class="verdict">判決：和解</h2>
+<p>ふたりで祠を後にします。今回の訴えを、記録として残しますか？</p>
+<p><small>ふたりとも「残す」を選んだときだけ残ります。どちらかが「残さない」を選ぶと、今回の訴えはすべて消えます。</small></p>
+{% set mine = visit.flag('keep', current_user) %}
+{% if mine is none %}
+  <div class="grid">
+    <form method="post" action="{{ url_for('shrine.keep', visit_id=visit.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="keep" value="yes">
+      <button type="submit">残す</button>
+    </form>
+    <form method="post" action="{{ url_for('shrine.keep', visit_id=visit.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="keep" value="no">
+      <button type="submit" class="secondary outline">残さない</button>
+    </form>
+  </div>
+{% else %}
+  <p class="presence">あなたは「{{ '残す' if mine else '残さない' }}」を選びました。{{ partner.name }}さんの選択を待っています…</p>
+{% endif %}
+{% endblock %}

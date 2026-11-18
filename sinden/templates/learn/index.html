@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}学び | Placaの祠{% endblock %}
+{% block content %}
+<h1>学び</h1>
+<p>自分も相手も大切にする伝え方（アサーション）、感情との付き合い方、より良い聴き方。</p>
+{% for a in articles %}
+  <article>
+    <h3>
+      <a href="{{ url_for('learn.show', slug=a.slug) }}">{{ a.title }}</a>
+      {% if a.free %}<mark>無料</mark>{% elif not can_read(a) %}<small>（プラン）</small>{% endif %}
+    </h3>
+    <p>{{ a.summary }}</p>
+  </article>
+{% endfor %}
+{% endblock %}

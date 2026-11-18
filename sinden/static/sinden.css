@@ -1,0 +1,732 @@
+/* Placaの祠 */
+:root {
+  --stone: #8c8172;
+  --flame: #ffb347;
+  --flame-glow: rgba(255, 170, 70, 0.55);
+  --gold: #d9a35b;
+  --serif: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+}
+
+/* ===== 全体の色：石と灯り（生成り色＋金茶色） ===== */
+:root[data-theme="light"] {
+  --pico-font-family-sans-serif: system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --pico-background-color: #f6f1e7;
+  --pico-color: #2e2820;
+  --pico-h1-color: #2e2820;
+  --pico-h2-color: #2e2820;
+  --pico-h3-color: #3a3228;
+  --pico-muted-color: #7a6f60;
+  --pico-muted-border-color: #e3d9c6;
+  --pico-primary: #9a5b2c;
+  --pico-primary-background: #9a5b2c;
+  --pico-primary-border: #9a5b2c;
+  --pico-primary-underline: rgba(154, 91, 44, 0.45);
+  --pico-primary-hover: #7a4420;
+  --pico-primary-hover-background: #7a4420;
+  --pico-primary-hover-border: #7a4420;
+  --pico-primary-hover-underline: #7a4420;
+  --pico-primary-focus: rgba(154, 91, 44, 0.25);
+  --pico-primary-inverse: #fffaf0;
+  --pico-secondary: #6f6556;
+  --pico-secondary-background: #6f6556;
+  --pico-secondary-border: #6f6556;
+  --pico-secondary-hover: #554c40;
+  --pico-secondary-hover-background: #554c40;
+  --pico-secondary-hover-border: #554c40;
+  --pico-card-background-color: #fffcf5;
+  --pico-card-sectioning-background-color: #f3ecdf;
+  --pico-card-box-shadow: 0 1px 2px rgba(60, 40, 20, 0.06), 0 6px 18px rgba(60, 40, 20, 0.06);
+  --pico-form-element-background-color: #fffdf8;
+  --pico-form-element-border-color: #d9cdb8;
+  --pico-mark-background-color: #f1dcb8;
+  --pico-mark-color: #5a3a1c;
+}
+h1, h2, h3, .brand, .verdict, .price { font-family: var(--serif); letter-spacing: 0.04em; }
+
+.brand {
+  font-weight: 500;
+  font-size: 1.3rem;
+  letter-spacing: 0.15em;
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  text-decoration: none;
+}
+.brand-flame {
+  width: 10px; height: 14px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: radial-gradient(circle at 50% 70%, #fff6d0, var(--flame) 60%, #e0742a);
+  box-shadow: 0 0 10px 3px var(--flame-glow);
+  animation: flicker 2.4s infinite ease-in-out;
+}
+.site-footer { padding-top: 2rem; padding-bottom: 2rem; }
+.small { padding: 0.3rem 0.7rem; font-size: 0.85rem; }
+.flash { padding: 0.8rem 1rem; }
+.hero { padding: 2rem 0 1rem; }
+.hero .eyebrow { color: var(--pico-muted-color); }
+.code { font-size: 2rem; letter-spacing: 0.2em; font-family: monospace; }
+.price { font-size: 1.6rem; font-weight: 700; }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+.verdict { text-align: center; letter-spacing: 0.2em; }
+.rules li { margin-bottom: 0.4rem; }
+
+/* ===== 祠の中 ===== */
+body.in-shrine.theme-night {
+  --pico-background-color: #0d0f1a;
+  --pico-color: #e8e2d6;
+  --pico-h2-color: #f3ead8;
+  --pico-h3-color: #f3ead8;
+  --pico-muted-color: #a8a094;
+  background: #0d0f1a;
+  color-scheme: dark;
+}
+body.in-shrine.theme-night textarea { background: #161a2b; color: #f3ead8; }
+body.in-shrine.theme-morning { background: #fbf6ea; }
+
+.stage {
+  position: relative;
+  height: min(58vh, 520px);
+  overflow: hidden;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+.scene {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center bottom;
+  transform-origin: 50% 70%;
+}
+.theme-night .scene {
+  background-color: #0b0d18;
+  background-image:
+    radial-gradient(circle at 50% 78%, rgba(255, 170, 80, 0.35), transparent 38%),
+    linear-gradient(#070812, #1b1b2c);
+}
+.theme-morning .scene {
+  background-color: #cfe9ff;
+  background-image: linear-gradient(#bfe3ff 0%, #e8f3ff 45%, #fff2d4 100%);
+}
+.backdrop { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+.goddess {
+  position: absolute;
+  left: 50%;
+  bottom: 14%;
+  height: 62%;
+  transform: translateX(-50%);
+}
+.goddess svg, .goddess img { height: 100%; width: auto; display: block; }
+.theme-night .goddess { filter: drop-shadow(0 0 18px rgba(255, 170, 80, 0.35)) brightness(0.9); }
+
+.lights {
+  position: absolute;
+  left: 0; right: 0; bottom: 3%;
+  display: flex;
+  justify-content: center;
+  gap: 3.5rem;
+}
+.light { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; }
+.light small { color: #f3ead8; text-shadow: 0 1px 3px #000; font-size: 0.75rem; }
+.theme-morning .light small { color: #4a3f30; text-shadow: none; }
+.flame {
+  width: 16px; height: 22px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: #555;
+  opacity: 0.35;
+  transition: all 0.8s ease;
+}
+.light.on .flame {
+  background: radial-gradient(circle at 50% 70%, #fff6d0, var(--flame) 60%, #e0742a);
+  box-shadow: 0 0 18px 6px var(--flame-glow);
+  opacity: 1;
+  animation: flicker 2.4s infinite ease-in-out;
+}
+@keyframes flicker {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08, 0.94); }
+}
+
+/* 近づいていく演出（祠に入ったとき） */
+.stage.intro .scene { animation: approach 6s cubic-bezier(0.2, 0.6, 0.3, 1) both; }
+.stage.intro .goddess { animation: appear 6s ease both; }
+.stage.intro .lights { animation: lights 7s ease both; }
+@keyframes approach {
+  0% { transform: scale(0.35); filter: brightness(0.5); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+@keyframes appear {
+  0%, 45% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes lights {
+  0%, 85% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage.intro .scene, .stage.intro .goddess, .stage.intro .lights { animation: none; }
+}
+
+.panel h2 { margin-bottom: 0.5rem; }
+.presence { color: var(--pico-muted-color); }
+.timer { font-variant-numeric: tabular-nums; font-size: 1.2rem; }
+
+.pleas { list-style: none; padding: 0; }
+.pleas li { padding: 0.6rem 0.9rem; border-left: 3px solid var(--stone); margin-bottom: 0.7rem; }
+.pleas li.mine { border-left-color: var(--flame); }
+.pleas li p { margin: 0.2rem 0 0; white-space: pre-wrap; }
+
+.mirror { border: 1px solid var(--stone); border-radius: 8px; padding: 0.6rem 1rem; }
+.mirror-text { font-style: italic; white-space: pre-wrap; }
+.danger { border-top: 1px solid #c0392b; margin-top: 0.6rem; padding-top: 0.6rem; }
+
+.records li { margin-bottom: 0.5rem; }
+
+/* ===== 手紙 ===== */
+.letter {
+  background: #fffdf7;
+  color: #2b2620;
+  padding: 2.5rem 2rem;
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+  line-height: 2;
+}
+.letter h1 { color: #2b2620; font-size: 1.4rem; }
+.letter-body { white-space: pre-wrap; margin: 1.5rem 0; }
+.letter-from { text-align: right; }
+
+@media print {
+  .no-print, header, footer { display: none !important; }
+  body { background: #fff; }
+  .letter { box-shadow: none; padding: 0; }
+}
+.hero .tagline { font-size: 1.3rem; margin-top: -0.5rem; }
+
+/* ===== トップページ（夜の祠） ===== */
+body.landing {
+  --pico-background-color: #07080f;
+  --pico-color: #e9e1d0;
+  --pico-h1-color: #f6eedd;
+  --pico-h2-color: #f3ead8;
+  --pico-h3-color: #f3ead8;
+  --pico-muted-color: #a89f90;
+  --pico-card-background-color: rgba(255, 244, 220, 0.04);
+  --pico-card-box-shadow: none;
+  --pico-primary: var(--gold);
+  --pico-primary-background: #c98a3e;
+  --pico-primary-border: #c98a3e;
+  --pico-primary-hover-background: #e0a456;
+  --pico-primary-hover-border: #e0a456;
+  --pico-primary-inverse: #1a120a;
+  --pico-mark-background-color: rgba(217, 163, 91, 0.25);
+  --pico-mark-color: #f6eedd;
+  background: #07080f;
+  color: var(--pico-color);
+}
+body.landing .site-header {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  z-index: 10;
+}
+body.landing .site-header a { color: #e9e1d0; }
+body.landing main { padding: 0; }
+body.landing .site-footer a { color: var(--pico-muted-color); }
+
+.lp-hero {
+  position: relative;
+  height: 100svh;
+  min-height: 620px;
+  max-height: 980px;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 50% 105%, rgba(120, 70, 30, 0.55) 0%, transparent 55%),
+    linear-gradient(#04050b 0%, #0d0e1a 55%, #1a1510 100%);
+}
+.lp-sky {
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(1.5px 1.5px at 20px 30px, #fff, transparent),
+    radial-gradient(1px 1px at 120px 80px, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 200px 20px, #ffe9c4, transparent),
+    radial-gradient(1px 1px at 260px 140px, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 60px 170px, #fff, transparent),
+    radial-gradient(1px 1px at 170px 210px, #ffe9c4, transparent);
+  background-size: 300px 240px;
+  opacity: 0.55;
+  mask-image: linear-gradient(#000 0%, #000 45%, transparent 75%);
+  animation: twinkle 6s ease-in-out infinite alternate;
+}
+@keyframes twinkle { from { opacity: 0.35; } to { opacity: 0.7; } }
+
+.lp-scene {
+  position: absolute; inset: 0;
+  transform-origin: 50% 88%;
+  animation: lp-approach 6.5s cubic-bezier(0.2, 0.6, 0.25, 1) both;
+}
+@keyframes lp-approach {
+  0% { transform: scale(0.42); filter: brightness(0.35); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+.lp-temple {
+  position: absolute;
+  left: 50%; bottom: 0;
+  width: min(1150px, 175%);
+  transform: translateX(-50%);
+}
+.lp-goddess {
+  position: absolute;
+  left: 50%; bottom: 13%;
+  height: 40%;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 0 22px rgba(255, 170, 80, 0.4)) brightness(0.92);
+  animation: lp-fade 6.5s ease both;
+}
+.lp-goddess svg, .lp-goddess img { height: 100%; width: auto; display: block; }
+@keyframes lp-fade { 0%, 40% { opacity: 0; } 100% { opacity: 1; } }
+
+.lp-lights {
+  position: absolute;
+  left: 50%; bottom: 8%;
+  transform: translateX(-50%);
+  display: flex; gap: 5rem;
+  animation: lp-lights 7.5s ease both;
+}
+.lp-lights .flame, .lp-turn .flame {
+  display: block;
+  width: 16px; height: 22px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: radial-gradient(circle at 50% 70%, #fff6d0, var(--flame) 60%, #e0742a);
+  box-shadow: 0 0 20px 7px var(--flame-glow);
+  animation: flicker 2.4s infinite ease-in-out;
+}
+.lp-lights .flame:nth-child(2) { animation-delay: 1.1s; }
+@keyframes lp-lights { 0%, 80% { opacity: 0; } 100% { opacity: 1; } }
+
+.lp-copy {
+  position: relative;
+  z-index: 3;
+  text-align: center;
+  padding-top: clamp(5.5rem, 15vh, 9rem);
+  animation: lp-rise 1.6s ease 3.4s both;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.75);
+}
+@keyframes lp-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+.lp-copy h1 {
+  font-size: clamp(1.9rem, 5.2vw, 3.4rem);
+  line-height: 1.45;
+  margin-bottom: 1rem;
+}
+/* アプリ名：太くせず、大きく・字間を広く・金色でほのかに光らせる */
+.lp-eyebrow {
+  color: var(--gold);
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(1.6rem, 4.5vw, 2.4rem);
+  letter-spacing: 0.3em;
+  margin-bottom: 1.2rem;
+  text-shadow: 0 0 18px rgba(217, 163, 91, 0.45), 0 2px 18px rgba(0, 0, 0, 0.75);
+}
+.lp-sub { font-family: var(--serif); font-size: clamp(1rem, 2.4vw, 1.25rem); color: #d9cfbd; line-height: 1.9; }
+.lp-actions { display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap; margin-top: 1.6rem; }
+.lp-ghost { color: #e9e1d0 !important; border-color: rgba(233, 225, 208, 0.5) !important; }
+.lp-flash {
+  display: inline-block;
+  padding: 0.4rem 1rem;
+  border: 1px solid rgba(217, 163, 91, 0.5);
+  border-radius: 999px;
+  font-size: 0.9rem;
+}
+
+.lp-scroll {
+  position: absolute;
+  left: 50%; bottom: 1.2rem;
+  transform: translateX(-50%);
+  z-index: 3;
+  width: 26px; height: 40px;
+  border: 1.5px solid rgba(233, 225, 208, 0.45);
+  border-radius: 14px;
+  animation: lp-rise 1s ease 5s both;
+}
+.lp-scroll span {
+  position: absolute; left: 50%; top: 8px;
+  width: 3px; height: 8px; margin-left: -1.5px;
+  border-radius: 2px;
+  background: var(--gold);
+  animation: scroll-dot 1.8s infinite;
+}
+@keyframes scroll-dot { 0% { opacity: 0; transform: translateY(0); } 40% { opacity: 1; } 100% { opacity: 0; transform: translateY(14px); } }
+
+.lp-band { padding: clamp(4rem, 10vh, 7rem) 0; text-align: center; }
+.lp-label {
+  color: var(--gold);
+  font-family: var(--serif);
+  letter-spacing: 0.4em;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+.lp-text { max-width: 40rem; margin: 0 auto; line-height: 2; color: #cfc6b5; }
+.lp-okite { background: linear-gradient(#1a1510, #0e0e17); }
+.lp-tablet {
+  max-width: 34rem;
+  margin: 0 auto 2.5rem;
+  padding: 2.4rem 1.5rem;
+  border: none;
+  border-top: 1px solid rgba(217, 163, 91, 0.6);
+  border-bottom: 1px solid rgba(217, 163, 91, 0.6);
+  background: linear-gradient(180deg, #24212d, #1b1922);
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.6), 0 20px 40px rgba(0, 0, 0, 0.4);
+  font-family: var(--serif);
+  font-size: clamp(1.5rem, 4vw, 2.3rem);
+  line-height: 1.7;
+  letter-spacing: 0.12em;
+  color: #f3ead8;
+  font-style: normal;
+}
+
+.lp-turns { background: #0e0e17; }
+.lp-turn-demo {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: clamp(1.5rem, 8vw, 5rem);
+  margin: 2.5rem auto;
+}
+.lp-turn { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; width: 5.5rem; }
+.lp-turn .flame { width: 22px; height: 30px; }
+.lp-turn strong { font-family: var(--serif); color: #f3ead8; }
+.lp-turn small { position: relative; height: 1.4em; width: 100%; }
+.lp-turn small span { position: absolute; inset: 0; transition: opacity 0.4s; }
+.lp-turn-goddess { height: 170px; filter: drop-shadow(0 0 16px rgba(255, 170, 80, 0.3)); }
+.lp-turn-goddess svg, .lp-turn-goddess img { height: 100%; width: auto; }
+/* 8秒で「あなた → 相手」と番が入れ替わる */
+.lp-turn-a .flame { animation: turn-on 8s infinite, flicker 2.4s infinite ease-in-out; }
+.lp-turn-b .flame { animation: turn-on 8s infinite -4s, flicker 2.4s infinite ease-in-out; }
+.lp-turn-a .say, .lp-turn-b .listen { animation: label-on 8s infinite; color: var(--gold); }
+.lp-turn-a .listen, .lp-turn-b .say { animation: label-off 8s infinite; color: #8e8678; }
+@keyframes turn-on {
+  0%, 45% { opacity: 1; box-shadow: 0 0 26px 10px var(--flame-glow); }
+  50%, 95% { opacity: 0.35; box-shadow: 0 0 6px 2px rgba(255, 170, 70, 0.2); }
+  100% { opacity: 1; box-shadow: 0 0 26px 10px var(--flame-glow); }
+}
+@keyframes label-on { 0%, 45% { opacity: 1; } 50%, 95% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes label-off { 0%, 45% { opacity: 0; } 50%, 95% { opacity: 1; } 100% { opacity: 0; } }
+
+.lp-features { background: linear-gradient(#0e0e17, #14121a); }
+.lp-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1.2rem;
+  text-align: left;
+}
+.lp-cards article {
+  margin: 0;
+  border: 1px solid rgba(217, 163, 91, 0.18);
+  border-radius: 10px;
+}
+.lp-cards p { color: #cfc6b5; margin-bottom: 0; font-size: 0.95rem; line-height: 1.8; }
+.lp-num { font-family: var(--serif); color: var(--gold); letter-spacing: 0.2em; font-size: 0.9rem; }
+
+.lp-why { background: radial-gradient(ellipse at 50% 120%, rgba(120, 70, 30, 0.45), transparent 60%), #14121a; }
+.lp-why h2 { font-size: clamp(1.5rem, 4vw, 2.3rem); line-height: 1.6; }
+.lp-pains {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem;
+  list-style: none; padding: 0; margin: 2rem auto; max-width: 40rem;
+}
+.lp-pains li {
+  list-style: none;
+  padding: 0.35rem 0.9rem;
+  border: 1px solid rgba(233, 225, 208, 0.25);
+  border-radius: 999px;
+  font-size: 0.9rem;
+  color: #d9cfbd;
+}
+
+/* スクロールでふわっと表示（JS が動くときだけ隠しておく） */
+html.js .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.9s ease, transform 0.9s ease; }
+html.js .reveal.visible { opacity: 1; transform: none; }
+
+@media (max-width: 600px) {
+  .lp-goddess { height: 34%; bottom: 14%; }
+  .lp-lights { gap: 3.5rem; }
+  .lp-turn-goddess { height: 120px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-scene, .lp-goddess, .lp-lights, .lp-copy, .lp-scroll, .lp-sky { animation: none; }
+  html.js .reveal { opacity: 1; transform: none; transition: none; }
+}
+
+/* ===== 女神の像（写真）：周りを暗闇に溶かし、灯りに照らされた色にする ===== */
+.goddess-photo {
+  /* 美術館の灰色の背景と、下のラベルを隠す */
+  -webkit-mask-image: radial-gradient(ellipse 46% 50% at 50% 46%, #000 55%, transparent 100%);
+  mask-image: radial-gradient(ellipse 46% 50% at 50% 46%, #000 55%, transparent 100%);
+  filter: sepia(0.55) saturate(1.3) brightness(0.92) contrast(1.15);
+}
+.theme-morning .goddess-photo { filter: sepia(0.25) brightness(1.05) contrast(1.05); }
+
+/* トップページ：顔のない女神 */
+.lp-faceless { background: radial-gradient(ellipse at 30% 50%, rgba(120, 70, 30, 0.35), transparent 55%), #0e0e17; }
+.lp-faceless-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(1.5rem, 5vw, 4rem);
+  align-items: center;
+  text-align: left;
+}
+.lp-faceless-statue { display: flex; justify-content: center; }
+.lp-faceless-statue img, .lp-faceless-statue svg { height: min(62vh, 520px); width: auto; }
+.lp-faceless-text p { color: #cfc6b5; line-height: 2; }
+.lp-faceless-text h2 { font-size: clamp(1.5rem, 4vw, 2.2rem); margin-bottom: 1.5rem; }
+.lp-faceless-text .lp-label { margin-bottom: 1rem; }
+@media (max-width: 720px) {
+  .lp-faceless-inner { grid-template-columns: 1fr; text-align: center; }
+  .lp-faceless-statue img, .lp-faceless-statue svg { height: 46vh; }
+}
+
+/* ===== 訴えの間の灯り：話す番は強く、聴く側は控えめに ===== */
+.lights.in-turn { align-items: flex-end; }
+.light .turn-label { font-size: 0.75rem; letter-spacing: 0.2em; opacity: 0.85; }
+/* 「話す」は金色の札にして、暗い背景でも朝の背景でも読めるようにする */
+.light.speaking .turn-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  padding: 0.15rem 0.4rem 0.15rem 0.65rem;
+  border-radius: 999px;
+  background: var(--gold);
+  color: #1a120a !important;
+  text-shadow: none;
+  opacity: 1;
+  box-shadow: 0 0 12px rgba(217, 163, 91, 0.6);
+}
+.light.on.speaking .flame {
+  width: 24px; height: 33px;
+  box-shadow: 0 0 30px 12px var(--flame-glow), 0 0 60px 20px rgba(255, 170, 70, 0.25);
+}
+.light.on.listening .flame {
+  width: 13px; height: 18px;
+  opacity: 0.5;
+  box-shadow: 0 0 8px 2px rgba(255, 170, 70, 0.3);
+}
+
+/* ===== 背景の写真（static/img/bg-night.jpg・bg-morning.jpg） ===== */
+/* 写真の上に灯りの色の膜を重ね、女神の像と灯りを浮かび上がらせる */
+.scene.has-photo { background-size: cover; }
+.scene.has-photo::before {
+  content: "";
+  position: absolute; inset: 0;
+  pointer-events: none;
+}
+.scene.has-photo .goddess, .stage .lights { z-index: 1; }
+.theme-night .scene.has-photo { background-position: center 52%; }
+.theme-night .scene.has-photo::before {
+  background:
+    radial-gradient(ellipse at 50% 82%, rgba(255, 165, 70, 0.38), transparent 45%),
+    linear-gradient(rgba(70, 40, 12, 0.35), rgba(5, 5, 12, 0.55));
+}
+.theme-morning .scene.has-photo { background-position: center 62%; }
+.theme-morning .scene.has-photo::before {
+  background:
+    linear-gradient(rgba(255, 236, 200, 0.12), transparent 40%),
+    linear-gradient(transparent 55%, rgba(40, 25, 10, 0.55));
+}
+/* 朝の写真の上でも名前が読めるように */
+.theme-morning .scene.has-photo ~ .lights small { color: #fff8ec; text-shadow: 0 1px 4px #000; }
+
+/* トップページ：夜の神殿の写真 */
+.lp-photo {
+  position: absolute; inset: 0;
+  background-size: cover;
+  background-position: center 42%;
+  /* 白黒の写真を、灯りに照らされた色にする */
+  filter: sepia(0.45) brightness(0.85) contrast(1.1);
+}
+.lp-photo::after {
+  content: "";
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 92%, rgba(255, 160, 60, 0.42), transparent 48%),
+    linear-gradient(rgba(4, 5, 11, 0.55), rgba(4, 5, 11, 0.15) 45%, rgba(10, 8, 6, 0.6));
+}
+
+/* ===== トップページ：女神を写真の神殿の中央に置く =====
+   写真（bg-night.jpg）の中の神殿：横の中心は写真の約56%、柱の足元は縦の約72%。
+   background-position をその割合にすると、cover でどう切り取られても、
+   その点は画面の同じ割合（横56%・縦72%）に来る。女神と灯りはそこを基準に置く */
+.lp-scene.with-photo {
+  --temple-x: 56%;
+  --temple-base: 72%;
+  transform-origin: var(--temple-x) var(--temple-base);
+}
+.lp-scene.with-photo .lp-photo { background-position: var(--temple-x) var(--temple-base); }
+.lp-scene.with-photo .lp-goddess {
+  left: var(--temple-x);
+  bottom: calc(100% - var(--temple-base));
+  height: 34%;
+  animation: lp-emerge 7s ease both;
+}
+.lp-scene.with-photo .lp-lights {
+  left: var(--temple-x);
+  bottom: calc(100% - var(--temple-base) - 7%);
+}
+.lp-scene.with-photo .lp-photo::after {
+  background:
+    radial-gradient(ellipse 30% 40% at var(--temple-x) 60%, rgba(255, 160, 60, 0.42), transparent 70%),
+    linear-gradient(rgba(4, 5, 11, 0.6), rgba(4, 5, 11, 0.15) 40%, rgba(10, 8, 6, 0.65));
+}
+/* 神殿の奥から、ふわりと浮かび上がる */
+@keyframes lp-emerge {
+  0%, 40% { opacity: 0; transform: translate(-50%, 8%); filter: blur(6px) drop-shadow(0 0 22px rgba(255, 170, 80, 0.4)) brightness(0.92); }
+  100% { opacity: 1; transform: translate(-50%, 0); filter: blur(0) drop-shadow(0 0 22px rgba(255, 170, 80, 0.4)) brightness(0.92); }
+}
+@media (max-width: 600px) {
+  .lp-scene.with-photo .lp-goddess { height: 28%; bottom: calc(100% - var(--temple-base)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-scene.with-photo .lp-goddess { animation: none; }
+}
+
+/* ===== トップページ：写真の神殿を画面の中央にそろえる =====
+   写真の神殿は、写真の横56%の位置にある。写真の層を左へ13.6%広げ
+   （left:-13.6%、right:0）、background-position の横を56%にすると、
+   cover でどう切り取られても、神殿の中心が画面の横50%に来る
+   （-13.6% + 56% × 113.6% ≒ 50%）。女神・灯り・文字も50%にそろえる */
+.lp-scene.with-photo {
+  --temple-x: 50%;
+  transform-origin: 50% var(--temple-base);
+}
+.lp-scene.with-photo .lp-photo {
+  left: -13.6%;
+  right: 0;
+  background-position: 56% var(--temple-base);
+}
+.lp-copy { margin-left: auto; margin-right: auto; text-align: center; }
+
+/* ===== 祠の画面：写真を ::before に敷き、神殿を中央にそろえる =====
+   夜の写真（ウェスタ神殿）は神殿が写真の横56%にあるので、トップページと同じく
+   層を左へ13.6%広げて background-position の横を56%にする（神殿が中央50%に来る） */
+.theme-night .scene.has-photo,
+.theme-morning .scene.has-photo { background-image: none; }
+.scene.has-photo::before { z-index: 0; }
+.theme-night .scene.has-photo::before {
+  left: -13.6%;
+  right: 0;
+  background-image:
+    radial-gradient(ellipse 35% 45% at 56% 82%, rgba(255, 165, 70, 0.38), transparent 70%),
+    linear-gradient(rgba(70, 40, 12, 0.35), rgba(5, 5, 12, 0.55)),
+    var(--photo);
+  background-size: auto, auto, cover;
+  background-position: center, center, 56% 52%;
+  background-repeat: no-repeat;
+}
+.theme-morning .scene.has-photo::before {
+  background-image:
+    linear-gradient(rgba(255, 236, 200, 0.12), transparent 40%),
+    linear-gradient(transparent 55%, rgba(40, 25, 10, 0.55)),
+    var(--photo);
+  background-size: auto, auto, cover;
+  background-position: center, center, center 62%;
+  background-repeat: no-repeat;
+}
+
+/* トップページの女神を大きく（34% → 48%。スマホは 28% → 38%） */
+.lp-scene.with-photo .lp-goddess { height: 48%; }
+@media (max-width: 600px) {
+  .lp-scene.with-photo .lp-goddess { height: 38%; }
+}
+
+/* ===== 声で訴える（大きなマイクボタン） ===== */
+.voice-box { display: flex; flex-direction: column; align-items: center; margin: 0.5rem 0 1rem; }
+.voice-button {
+  display: inline-flex; align-items: center; gap: 0.7rem;
+  padding: 0.9rem 1.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(217, 163, 91, 0.7);
+  background: rgba(217, 163, 91, 0.12);
+  color: inherit;
+  font-size: 1.05rem;
+  font-family: var(--serif);
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  text-decoration: none;
+}
+.voice-button .voice-icon { font-size: 1.5rem; }
+.voice-button.listening {
+  background: var(--gold);
+  color: #1a120a;
+  animation: voice-pulse 1.6s infinite;
+}
+@keyframes voice-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(217, 163, 91, 0.6); }
+  100% { box-shadow: 0 0 0 18px rgba(217, 163, 91, 0); }
+}
+.voice-locked { opacity: 0.7; }
+.voice-live { min-height: 1.5em; margin: 0.6rem 0 0; color: var(--gold); font-style: italic; text-align: center; }
+.voice-note { margin: 0.3rem 0; text-align: center; }
+/* 話している間、自分の灯りが声に合わせて揺れる */
+.light.voice-on .flame { animation: voice-flicker 0.5s infinite alternate ease-in-out; }
+@keyframes voice-flicker {
+  from { transform: scale(1); }
+  to { transform: scale(1.25, 1.12); }
+}
+.plea-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.plea-actions button { width: auto; flex: 1 1 14rem; margin-bottom: 0.4rem; }
+
+/* ===== 映したあと：女神の鏡とことばの灯 ===== */
+.reflection { display: grid; gap: 1rem; }
+.mirror-card, .lamp-card, .own-words {
+  margin: 0;
+  padding: 1rem 1.2rem;
+  border-radius: 10px;
+  border: 1px solid var(--stone);
+}
+.mirror-card h3, .lamp-card h3, .own-words h3 { margin-bottom: 0.3rem; font-size: 1.1rem; }
+.lamp-card { border-color: rgba(217, 163, 91, 0.75); background: rgba(217, 163, 91, 0.08); }
+.lamp-card h3 { display: flex; align-items: center; gap: 0.5rem; }
+.lamp-flame {
+  width: 10px; height: 14px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: radial-gradient(circle at 50% 70%, #fff6d0, var(--flame) 60%, #e0742a);
+  box-shadow: 0 0 10px 3px var(--flame-glow);
+  animation: flicker 2.4s infinite ease-in-out;
+}
+.lamp-text { white-space: pre-wrap; line-height: 1.9; font-size: 1.05rem; }
+
+/* ===== 「祠」のふりがなと意味 ===== */
+ruby rt {
+  font-size: 0.42em;
+  letter-spacing: 0.1em;
+  font-weight: 500;
+}
+.lp-eyebrow ruby rt { color: var(--gold); opacity: 0.85; }
+.lp-meaning {
+  margin: -0.6rem auto 1.4rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  color: #cfc6b5;
+  opacity: 0.85;
+}
+.meaning-note {
+  padding: 0.6rem 1rem;
+  border-left: 3px solid var(--pico-primary);
+  background: var(--pico-card-sectioning-background-color);
+  font-size: 0.95rem;
+}
+
+/* マイクのボタン：文字を必ず読める色にする（夜は生成り色、朝は焦げ茶） */
+.voice-button[hidden] { display: none !important; }
+.voice-button,
+.voice-button:hover,
+.voice-button:focus {
+  color: #f3ead8 !important;
+  background: rgba(217, 163, 91, 0.22);
+  border: 1.5px solid var(--gold);
+}
+.theme-morning .voice-button,
+.theme-morning .voice-button:hover,
+.theme-morning .voice-button:focus { color: #3a2a18 !important; }
+.voice-button .voice-label { color: inherit; font-weight: 700; }
+.voice-button.listening,
+.theme-morning .voice-button.listening { background: var(--gold); color: #1a120a !important; }
+
+/* 「ことばを確かめる」の説明 */
+.check-note { margin-top: 0.6rem; padding: 0.6rem 0.9rem; border-left: 3px solid var(--gold); background: rgba(217, 163, 91, 0.06); }
+.check-note p, .check-note ul { margin-bottom: 0.3rem; }
+.check-note ul { padding-left: 1.2rem; }

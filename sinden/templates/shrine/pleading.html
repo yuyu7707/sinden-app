@@ -1,0 +1,156 @@
+{% extends "shrine/_layout.html" %}
+{% block panel %}
+
+{% if my_last and (my_last.mirror or my_last.mirror_note or my_last.danger) %}
+  <details class="mirror" {% if not is_speaker %}open{% endif %}>
+    <summary>女神の鏡（あなたにだけ見えています）</summary>
+    <p><small>あなたの訴えを、肯定も否定もせずに映し返しています。</small></p>
+    {% if my_last.mirror %}
+      <p class="mirror-text">{{ my_last.mirror }}</p>
+    {% elif my_last.mirror_note %}
+      <p><small>{{ my_last.mirror_note }}</small></p>
+      {% if '追加で購入' in my_last.mirror_note %}
+        <p><small><a href="{{ url_for('billing.index') }}#mirrors" target="_blank" rel="noopener">女神の鏡を追加で購入する（別の画面で開きます）</a></small></p>
+      {% endif %}
+    {% endif %}
+    {% if my_last.danger %}
+      <div class="danger">
+        <p><strong>ひとりで抱えないでください。</strong>暴力や脅し、強い支配を感じるときは、和解よりもあなたの安全が大切です。</p>
+        {% include "_help_lines.html" %}
+      </div>
+    {% endif %}
+  </details>
+{% endif %}
+
+{% if is_speaker %}
+  <h2>あなたが訴える番です</h2>
+  <p class="presence" data-presence>
+    {% if partner_present %}{{ partner.name }}さんが隣で聴いています{% else %}{{ partner.name }}さんの灯りが消えています{% endif %}
+  </p>
+  <p class="timer">残り <span id="timer" data-remaining="{{ remaining }}">{{ remaining // 60 }}:{{ '%02d' % (remaining % 60) }}</span></p>
+
+  {% if visit.draft_text is none %}
+    {# ① 書く・話す #}
+    <form method="post" action="{{ url_for('shrine.plea', visit_id=visit.id) }}" id="plea-form">
+      {{ form.hidden_tag() }}
+      <div class="voice-box">
+        {% if current_user.is_premium %}
+          <button type="button" id="voice" class="voice-button" hidden>
+            <span class="voice-icon" aria-hidden="true">🎙</span>
+            <span class="voice-label">女神に、声で話しかける</span>
+          </button>
+          <p id="voice-live" class="voice-live" aria-live="polite"></p>
+          <p id="voice-unsupported" class="voice-note" hidden><small>このブラウザでは声で訴えられません。Chrome か Edge でお試しください。</small></p>
+        {% else %}
+          <a href="{{ url_for('billing.index') }}" class="voice-button voice-locked" role="button">
+            <span class="voice-icon" aria-hidden="true">🎙</span>
+            <span class="voice-label">声で訴える（プラン）</span>
+          </a>
+        {% endif %}
+      </div>
+      <textarea name="body" id="plea-body" rows="7" maxlength="{{ max_chars }}"
+                placeholder="女神に向かって、言いたいことを。相手は黙って聴いています。"></textarea>
+      <p class="row"><small><span id="count">0</span> / {{ max_chars }}文字</small></p>
+      <div class="plea-actions">
+        {% if reflect_block %}
+          <p class="voice-note"><small>{{ reflect_block }}</small></p>
+        {% else %}
+          <button type="submit" formaction="{{ url_for('shrine.reflect', visit_id=visit.id) }}" data-no-clear>
+            届ける前に、ことばを確かめる
+          </button>
+        {% endif %}
+        <button type="submit" class="secondary outline">このまま届ける</button>
+      </div>
+      <div class="check-note">
+        <p><small>「ことばを確かめる」を押すと、相手に届ける前に、<strong>あなたにだけ</strong>次の2つが出ます。</small></p>
+        <ul>
+          <li><small><strong>女神の鏡</strong>：あなたの言葉が、どう聞こえるか</small></li>
+          <li><small><strong>ことばの灯</strong>：思いやりのある言い方の案</small></li>
+        </ul>
+        <p><small>どちらも相手には見えません。届けるかどうか、どの言葉で届けるかは、そのあとあなたが決めます。</small></p>
+      </div>
+    </form>
+
+  {% else %}
+    {# ② 映したあと：あなたにだけ見える。届ける言葉を選ぶ #}
+    <div class="reflection">
+      <section class="mirror-card">
+        <h3>女神の鏡</h3>
+        <p><small>あなたの訴えを、肯定も否定もせずに映し返しています。</small></p>
+        {% if visit.draft_mirror %}
+          <p class="mirror-text">{{ visit.draft_mirror }}</p>
+        {% elif visit.draft_note %}
+          <p><small>{{ visit.draft_note }}</small></p>
+          {% if '追加で購入' in visit.draft_note %}
+            <p><small><a href="{{ url_for('billing.index') }}#mirrors" target="_blank" rel="noopener">女神の鏡を追加で購入する（別の画面で開きます）</a></small></p>
+          {% endif %}
+        {% endif %}
+      </section>
+
+      {% if visit.draft_danger %}
+        <div class="danger">
+          <p><strong>ひとりで抱えないでください。</strong>暴力や脅し、強い支配を感じるときは、和解よりもあなたの安全が大切です。</p>
+          {% include "_help_lines.html" %}
+        </div>
+      {% elif visit.draft_lamp %}
+        <section class="lamp-card">
+          <h3><span class="lamp-flame" aria-hidden="true"></span>ことばの灯</h3>
+          <p><small>あなたの気持ちはそのままに、相手に届きやすい言い方の案です。使うかどうかは、あなたが決めます。</small></p>
+          <p class="lamp-text">{{ visit.draft_lamp }}</p>
+          <form method="post" action="{{ url_for('shrine.plea', visit_id=visit.id) }}">
+            {{ form.hidden_tag() }}
+            <input type="hidden" name="source" value="lamp">
+            <button type="submit">ことばの灯の言い方で届ける</button>
+          </form>
+        </section>
+      {% endif %}
+
+      <form method="post" action="{{ url_for('shrine.plea', visit_id=visit.id) }}" id="plea-form" class="own-words">
+        {{ form.hidden_tag() }}
+        <h3>あなたの言葉</h3>
+        <p><small>このまま届けても、書き直してから届けてもかまいません。</small></p>
+        <textarea name="body" id="plea-body" rows="6" maxlength="{{ max_chars }}" data-prefilled>{{ visit.draft_text }}</textarea>
+        <p class="row"><small><span id="count">0</span> / {{ max_chars }}文字</small></p>
+        <button type="submit" class="{% if visit.draft_lamp and not visit.draft_danger %}secondary{% endif %}">自分の言葉で届ける</button>
+      </form>
+      <p><small>どれを選んでも、相手に届くのは「届ける」を押した言葉だけです。鏡と灯は、相手には見えません。</small></p>
+    </div>
+  {% endif %}
+{% else %}
+  <h2>いまは聴く番です</h2>
+  <p class="presence">{{ partner.name }}さんが女神に訴えています。話し終わるまで、黙って聴きましょう。</p>
+  <p class="timer">残り <span id="timer" data-remaining="{{ remaining }}" data-passive="1">{{ remaining // 60 }}:{{ '%02d' % (remaining % 60) }}</span></p>
+{% endif %}
+
+{% if visit.pleas %}
+  <h3>祠に響いた言葉</h3>
+  <ol class="pleas">
+    {% for p in visit.pleas %}
+      <li class="{% if p.user_id == current_user.id %}mine{% else %}theirs{% endif %}">
+        <small>{{ p.user.name }}</small>
+        <p>{{ p.body }}</p>
+      </li>
+    {% endfor %}
+  </ol>
+{% endif %}
+
+<hr>
+{% if visit.flag('leave', current_user) %}
+  <p class="presence">
+    あなたは「祠を出よう」と伝えました。{{ partner.name }}さんも出ると決めたら、和解です。
+  </p>
+  <form method="post" action="{{ url_for('shrine.leave', visit_id=visit.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="stay" value="1">
+    <button type="submit" class="secondary outline small">やっぱりもう少し話す</button>
+  </form>
+{% else %}
+  {% if visit.flag('leave', partner) %}
+    <p class="presence">{{ partner.name }}さんは「祠を出よう」と言っています。</p>
+  {% endif %}
+  <form method="post" action="{{ url_for('shrine.leave', visit_id=visit.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="secondary outline">祠を出よう</button>
+  </form>
+{% endif %}
+{% endblock %}

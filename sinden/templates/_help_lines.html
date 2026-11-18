@@ -1,0 +1,11 @@
+<table>
+  <tbody>
+    {% for name, number, note in help_lines or lines %}
+      <tr>
+        <th scope="row">{{ name }}</th>
+        <td><strong>{{ number }}</strong></td>
+        <td><small>{{ note }}</small></td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>

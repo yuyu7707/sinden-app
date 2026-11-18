@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}プラン | Placaの祠{% endblock %}
+{% block content %}
+<h1>プラン</h1>
+
+{% if current_user.plan_source %}
+  <article>
+    いまは<strong>{{ current_user.plan_source }}</strong>で使えています。
+    {% if current_user.has_subscription %}
+      {% if current_user.subscription_status == 'past_due' %}
+        <p><small>お支払いが確認できていません。カードをご確認ください。</small></p>
+      {% endif %}
+      <form method="post" action="{{ url_for('billing.portal') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="secondary outline">解約・カードの変更</button>
+      </form>
+    {% endif %}
+  </article>
+{% endif %}
+<p><small>女神の鏡：今月あと {{ mirrors_left }} 回{% if current_user.extra_mirrors %}（うち追加分 {{ current_user.extra_mirrors }} 回）{% endif %}</small></p>
+
+<table>
+  <thead>
+    <tr><th></th><th>無料</th><th>個人プラン</th><th>ふたりプラン</th></tr>
+  </thead>
+  <tbody>
+    <tr><th>一人ずつ訴える・夜の祠・和解</th><td>○</td><td>○</td><td>○</td></tr>
+    <tr><th>女神の鏡（AI）</th><td>月{{ free_mirrors }}回</td><td>本人が月{{ premium_mirrors }}回</td><td>ふたりとも月{{ premium_mirrors }}回</td></tr>
+    <tr><th>声で訴える</th><td>－</td><td>本人</td><td>ふたりとも</td></tr>
+    <tr><th>学び（アサーション・感情との付き合い方・聴き方）</th><td>入門のみ</td><td>本人</td><td>ふたりとも</td></tr>
+    <tr><th>手紙を書いて届ける（PDF にもできる）</th><td>読むだけ</td><td>本人</td><td>ふたりとも</td></tr>
+    <tr><th>ローマの朝の祠</th><td>－</td><td>ふたりとも</td><td>ふたりとも</td></tr>
+    <tr><th>記録の振り返り</th><td>直近{{ free_records }}件</td><td>ふたりとも</td><td>ふたりとも</td></tr>
+  </tbody>
+</table>
+<p><small>「ふたりとも」と書いた機能は、ふたりで共有するものです。どちらかがプランに入れば、ふたりで使えます。</small></p>
+
+<div class="grid">
+  <article>
+    <h3>個人プラン</h3>
+    <p class="price">{{ price_solo|yen }} / 月</p>
+    <p><small>入った本人が使えます。いつでも解約できます。</small></p>
+    {% if block_solo %}
+      <p><small>{{ block_solo }}</small></p>
+    {% else %}
+      <form method="post" action="{{ url_for('billing.checkout', kind='solo') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="secondary">個人プランに入る</button>
+      </form>
+    {% endif %}
+  </article>
+  <article>
+    <h3>ふたりプラン <mark>おすすめ</mark></h3>
+    <p class="price">{{ price_pair|yen }} / 月</p>
+    <p><small>{% if partner %}{{ partner.name }}さんも{% else %}相手も{% endif %}すべて使えます。個人プラン2人分より{{ (price_solo * 2 - price_pair)|yen }}お得です。</small></p>
+    {% if block_pair %}
+      <p><small>{{ block_pair }}</small></p>
+    {% else %}
+      <form method="post" action="{{ url_for('billing.checkout', kind='pair') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit">ふたりプランに入る</button>
+      </form>
+    {% endif %}
+  </article>
+</div>
+
+<article id="mirrors">
+  <h3>女神の鏡 追加{{ pack_size }}回</h3>
+  <p class="price">{{ price_pack|yen }}</p>
+  <p><small>プランの方が、今月の{{ premium_mirrors }}回を使い切ったあとに使えます。1回払いで、使い切るまで期限はありません。</small></p>
+  {% if current_user.is_premium %}
+    <form method="post" action="{{ url_for('billing.checkout', kind='mirrors') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="secondary outline">追加で購入する</button>
+    </form>
+  {% else %}
+    <p><small>プランに入ると購入できます。</small></p>
+  {% endif %}
+</article>
+{% endblock %}

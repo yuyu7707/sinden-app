@@ -1,0 +1,35 @@
+{#
+  女神ヴィリプラカの像（イメージ）。優先順：
+  1. static/img/goddess.png（背景を透明にした写真）
+  2. static/img/goddess.jpg（メトロポリタン美術館「大理石の女性像」。パブリックドメイン。周りを暗闇にぼかして使う）
+  3. 図（SVG）
+#}
+{% if static_exists('img/goddess.png') %}
+  <img src="{{ url_for('static', filename='img/goddess.png') }}" alt="女神ヴィリプラカの像（イメージ）">
+{% elif static_exists('img/goddess.jpg') %}
+  <img class="goddess-photo" src="{{ url_for('static', filename='img/goddess.jpg') }}"
+       alt="顔のない女神の像（ローマ時代の大理石の女性像）">
+{% else %}
+  <svg viewBox="0 0 200 400" role="img" aria-label="女神ヴィリプラカの像（イメージ）">
+    <defs>
+      <linearGradient id="marble" x1="0" x2="1">
+        <stop offset="0" stop-color="#f1ece2"/>
+        <stop offset="1" stop-color="#b9b2a4"/>
+      </linearGradient>
+    </defs>
+    <g fill="url(#marble)">
+      <circle cx="100" cy="66" r="13"/>
+      <circle cx="100" cy="92" r="22"/>
+      <rect x="92" y="110" width="16" height="16"/>
+      <path d="M66 140 Q100 116 134 140 L152 322 L48 322 Z"/>
+      <path d="M66 140 Q52 190 64 236 L74 232 Q66 192 78 150 Z"/>
+      <path d="M134 140 Q150 176 140 214 L130 210 Q138 180 124 150 Z"/>
+      <rect x="40" y="322" width="120" height="12"/>
+      <rect x="50" y="334" width="100" height="56"/>
+    </g>
+    <g stroke="#a59d8d" stroke-width="1.5" fill="none" opacity=".7">
+      <path d="M84 160 L74 318"/><path d="M100 150 L100 318"/>
+      <path d="M116 160 L126 318"/><path d="M90 200 L84 318"/><path d="M110 200 L116 318"/>
+    </g>
+  </svg>
+{% endif %}

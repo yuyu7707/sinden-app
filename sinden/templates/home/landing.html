@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block body_class %}landing{% endblock %}
+{% block head %}
+<script>document.documentElement.classList.add("js")</script>
+{% endblock %}
+
+{% block flashes %}{% endblock %}
+
+{# トップページでは、中央の大きいアプリ名だけを見せる #}
+{% block brand %}{% endblock %}
+
+{% block hero %}
+<section class="lp-hero" aria-label="Placaの祠">
+  <div class="lp-sky" aria-hidden="true"></div>
+
+  <div class="lp-scene{% if static_exists('img/bg-night.jpg') %} with-photo{% endif %}" aria-hidden="true">
+    {% if static_exists('img/bg-night.jpg') %}
+    {# 夜の神殿の写真（ウェスタ神殿。かまどの火の女神の、消えない聖なる火を守った神殿） #}
+    <div class="lp-photo" style="background-image:url('{{ url_for('static', filename='img/bg-night.jpg') }}')"></div>
+    {% else %}
+    <svg class="lp-temple" viewBox="0 0 1000 400" preserveAspectRatio="xMidYMax meet">
+      <defs>
+        <radialGradient id="glow" cx="50%" cy="80%" r="45%">
+          <stop offset="0" stop-color="#ffb35c" stop-opacity=".45"/>
+          <stop offset="1" stop-color="#ffb35c" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <ellipse cx="500" cy="330" rx="330" ry="170" fill="url(#glow)"/>
+      <g fill="#191823" stroke="#2d2a3a" stroke-width="2">
+        <polygon points="190,92 500,12 810,92"/>
+        <rect x="200" y="92" width="600" height="24"/>
+        {% for x in [228, 318, 408, 556, 646, 736] %}
+          <rect x="{{ x }}" y="116" width="36" height="224"/>
+        {% endfor %}
+        <rect x="180" y="340" width="640" height="18"/>
+        <rect x="150" y="358" width="700" height="18"/>
+        <rect x="120" y="376" width="760" height="24"/>
+      </g>
+    </svg>
+    {% endif %}
+    <div class="lp-goddess">{% include "_goddess.html" %}</div>
+    <div class="lp-lights">
+      <span class="flame"></span>
+      <span class="flame"></span>
+    </div>
+  </div>
+
+  <div class="lp-copy container">
+    {% for message in get_flashed_messages() %}
+      <p class="lp-flash">{{ message }}</p>
+    {% endfor %}
+    <p class="lp-eyebrow">Placaの<ruby>祠<rt>ほこら</rt></ruby></p>
+    <p class="lp-meaning">祠（ほこら）とは、神さまをまつる小さなお社のこと</p>
+    <h1>喧嘩を、<br>終わりにしないための祠。</h1>
+    <p class="lp-sub">ひとりずつ話して、最後まで聴く。<br>2000年前のローマの仲直りの知恵を、スマホに。</p>
+    <p class="lp-actions">
+      <a href="{{ url_for('auth.register') }}" role="button">ふたりで登録する</a>
+      <a href="#okite" role="button" class="outline lp-ghost">祠の掟を読む</a>
+    </p>
+  </div>
+
+  <a href="#okite" class="lp-scroll" aria-label="下へ">
+    <span></span>
+  </a>
+</section>
+
+<section id="okite" class="lp-band lp-okite">
+  <div class="container">
+    <p class="lp-label">祠の掟</p>
+    <blockquote class="lp-tablet reveal">女神に訴えるのは、<br>一時に一人。</blockquote>
+    <div class="lp-text reveal">
+      <p>古代ローマのパラティーノの丘に、喧嘩したふたりが一緒に訪れる、女神ヴィリプラカの小さな祠がありました。神官も誰もいない祠に、掟はひとつだけ。</p>
+      <p>一方が訴えている間、もう一方は黙って聴くしかありません。訴える本人も、静かな祠に響く自分の声を聴きます。<strong>何も肯定しない女神の前で、何も言い返さない相手に、怒り続けるのは難しい。</strong>女神の判決は、いつも「和解」でした。</p>
+    </div>
+  </div>
+</section>
+
+<section class="lp-band lp-faceless">
+  <div class="container lp-faceless-inner">
+    <div class="lp-faceless-statue reveal">{% include "_goddess.html" %}</div>
+    <div class="lp-faceless-text reveal">
+      <p class="lp-label">顔のない女神</p>
+      <h2>女神には、顔がありません。</h2>
+      <p>この像は、ローマ時代の大理石の女性像です。長い年月のあいだに、頭部は失われました。</p>
+      <p>けれど、祠の女神に必要なのは、表情ではありませんでした。<br>
+        うなずきもしない。眉をひそめもしない。どちらの味方にもならない。<br>
+        ただそこにいて、ふたりの訴えを最後まで聴いている。</p>
+      <p><strong>顔のない女神の前では、だれかの顔色をうかがう必要はありません。</strong><br>
+        自分の言葉と、まっすぐ向き合うだけです。</p>
+    </div>
+  </div>
+</section>
+
+<section class="lp-band lp-turns">
+  <div class="container">
+    <p class="lp-label">ひとりずつ</p>
+    <h2 class="reveal">話す番の灯りだけが、強く灯る。</h2>
+    <div class="lp-turn-demo reveal" aria-hidden="true">
+      <div class="lp-turn lp-turn-a">
+        <span class="flame"></span>
+        <strong>あなた</strong>
+        <small><span class="say">話す</span><span class="listen">聴く</span></small>
+      </div>
+      <div class="lp-turn-goddess">{% include "_goddess.html" %}</div>
+      <div class="lp-turn lp-turn-b">
+        <span class="flame"></span>
+        <strong>相手</strong>
+        <small><span class="say">話す</span><span class="listen">聴く</span></small>
+      </div>
+    </div>
+    <p class="lp-text reveal">
+      話す番の人だけが、女神に訴えられます。相手は話し終わるまで、言い返せません。<br>
+      スマホの向こうでも、女神の足元の灯りが「隣で聴いている」ことを伝えます。
+    </p>
+  </div>
+</section>
+
+<section class="lp-band lp-features">
+  <div class="container">
+    <p class="lp-label">祠でできること</p>
+    <div class="lp-cards">
+      <article class="reveal">
+        <span class="lp-num">I</span>
+        <h3>ふたりで祠へ</h3>
+        <p>一方が「祠へ行こう」と誘い、もう一方が応じて初めて祠が開きます。祠に行くこと自体が、最初の歩み寄りです。</p>
+      </article>
+      <article class="reveal">
+        <span class="lp-num">II</span>
+        <h3>一人ずつ訴える</h3>
+        <p>1回の訴えは最大5分。文字でも、声でも。話す番でない人は、入力できません。</p>
+      </article>
+      <article class="reveal">
+        <span class="lp-num">III</span>
+        <h3>女神の鏡</h3>
+        <p>訴え終えると、<strong>あなたにだけ</strong>鏡が映ります。肯定も否定もせずに、あなたが本当に伝えたかったことを映し返します（AI を使います）。</p>
+      </article>
+      <article class="reveal">
+        <span class="lp-num">IV</span>
+        <h3>和解の記録</h3>
+        <p>ふたりで祠を出たら「和解」。記録を残すかどうかは、ふたりで選びます。</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="lp-band lp-why">
+  <div class="container">
+    <h2 class="reveal">言いたいことを言えずに、<br>終わらせないために。</h2>
+    <ul class="lp-pains reveal">
+      <li>言い合いがヒートアップする</li>
+      <li>片方が黙り込む</li>
+      <li>うまく伝えられない</li>
+      <li>話しにくい内容がある</li>
+      <li>同じ喧嘩をくり返す</li>
+      <li>子どもの前でしてしまう</li>
+    </ul>
+    <p class="lp-text reveal">関係が良いうちに、ふたりで登録しておきましょう。<br>いざという時の、お守りになります。</p>
+    <p class="reveal"><a href="{{ url_for('auth.register') }}" role="button">ふたりで登録する</a></p>
+  </div>
+</section>
+{% endblock %}
+
+{% block content %}{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='landing.js') }}"></script>
+{% endblock %}

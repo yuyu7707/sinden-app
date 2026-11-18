@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% from "_form_errors.html" import field %}
+{% block content %}
+<h1>{{ current_user.name }}さん</h1>
+
+{% if pair is none %}
+  <article>
+    <h2>ふたりのペアを作る</h2>
+    <p>関係が良いうちに、相手とペアになっておきましょう。</p>
+    <div class="grid">
+      <div>
+        <h3>招待する側</h3>
+        <form method="post" action="{{ url_for('home.create_pair') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit">招待コードを作る</button>
+        </form>
+      </div>
+      <div>
+        <h3>招待された側</h3>
+        <form method="post" action="{{ url_for('home.join_pair') }}">
+          {{ join_form.hidden_tag() }}
+          {{ field(join_form.code, placeholder="例：AB23CD45") }}
+          <button type="submit">ペアになる</button>
+        </form>
+      </div>
+    </div>
+  </article>
+
+{% elif partner is none %}
+  <article>
+    <h2>相手を待っています</h2>
+    <p>この招待コードを相手に伝えてください。相手が登録して入力すると、ペアになります。</p>
+    <p class="code">{{ pair.invite_code }}</p>
+  </article>
+
+{% else %}
+  <p>
+    {{ partner.name }}さんとのペア
+    {% if current_user.plan_source %}<mark>{{ current_user.plan_source }}</mark>{% endif %}
+    {% if unread %} ・ <a href="{{ url_for('letters.index') }}">未読の手紙が{{ unread }}通あります</a>{% endif %}
+  </p>
+
+  {% if visit %}
+    <article class="shrine-call">
+      {% if visit.status == 'invited' and visit.invitee_id == current_user.id %}
+        <h2>{{ partner.name }}さんが、祠に誘っています</h2>
+        <p>{{ visit.theme_label }}で待っています。</p>
+        <div class="grid">
+          <form method="post" action="{{ url_for('shrine.accept', visit_id=visit.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit">応じて祠へ入る</button>
+          </form>
+          <form method="post" action="{{ url_for('shrine.cancel', visit_id=visit.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="secondary outline">いまは見送る</button>
+          </form>
+        </div>
+      {% else %}
+        <h2>祠への訪問が続いています</h2>
+        <a href="{{ url_for('shrine.show', visit_id=visit.id) }}" role="button">祠へ戻る</a>
+      {% endif %}
+    </article>
+  {% else %}
+    <article>
+      <h2>喧嘩しそうになったら</h2>
+      <p>言い合いが止まらないとき、言いたいことが言えないとき。{{ partner.name }}さんを祠に誘いましょう。</p>
+      <form method="post" action="{{ url_for('shrine.invite') }}">
+        {{ invite_form.hidden_tag() }}
+        <fieldset>
+          <legend>祠の版</legend>
+          {% for opt in invite_form.theme %}
+            <label>{{ opt() }} {{ opt.label.text }}</label>
+          {% endfor %}
+        </fieldset>
+        <button type="submit">祠へ行こう</button>
+      </form>
+    </article>
+  {% endif %}
+
+  {% if mirrors_left is not none %}
+    <p><small>女神の鏡：今月あと {{ mirrors_left }} 回{% if current_user.plan_source %}（{{ current_user.plan_source }}）{% endif %}</small></p>
+  {% endif %}
+{% endif %}
+{% endblock %}

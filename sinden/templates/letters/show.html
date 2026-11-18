@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}{{ letter.title }} | Placaの祠{% endblock %}
+{% block body_class %}letter-page{% endblock %}
+{% block content %}
+<article class="letter">
+  <p class="letter-to">{{ letter.recipient.name }}さんへ</p>
+  <h1>{{ letter.title }}</h1>
+  <div class="letter-body">{{ letter.body }}</div>
+  <p class="letter-from">{{ letter.created_at|jday }}<br>{{ letter.sender.name }}より</p>
+</article>
+<p class="no-print">
+  <button type="button" onclick="window.print()">PDF に保存・印刷する</button>
+  <a href="{{ url_for('letters.index') }}">手紙の一覧へ</a>
+</p>
+<p class="no-print"><small>印刷の画面で「送信先」を「PDF に保存」にすると、PDF になります。</small></p>
+{% endblock %}
