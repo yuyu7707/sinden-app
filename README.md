@@ -4,6 +4,9 @@
 ひとりずつ話して、最後まで聴く。2000年前のローマの仲直りの知恵を、スマホに。
 企画と設計は [docs/plan.md](docs/plan.md)。
 
+- **公開中**：https://sinden-34-146-71-44.sslip.io
+- 設計書：[要件](docs/spec/requirements.md) / [画面](docs/design/screens.md) / [データベース](docs/design/database.md) / [本番環境](docs/deploy.md)
+
 ## 動かし方
 
 ### 1. `.env` を作る
