@@ -6,7 +6,8 @@
   const stateUrl = shrine.dataset.stateUrl;
   const version = shrine.dataset.version;
   const visitId = shrine.querySelector(".stage")?.dataset.visit;
-  const draftKey = `sinden-draft-${visitId}`;
+  // 下書きは「番ごと」に分ける。どのボタンで届けても、次の番に前の文章が残らない
+  const draftKey = `sinden-draft-${visitId}-${shrine.dataset.turn}`;
 
   const safeGet = (key) => { try { return sessionStorage.getItem(key); } catch { return null; } };
   const safeSet = (key, value) => { try { sessionStorage.setItem(key, value); } catch { /* 使えなくても動く */ } };
@@ -57,6 +58,12 @@
     update();
     form.addEventListener("submit", () => { submitted = true; safeRemove(draftKey); });
   }
+  // 「ことばの灯の言い方で届ける」など、別のフォームで届けたときも下書きを消す
+  shrine.querySelectorAll("form").forEach((f) => {
+    if (f.querySelector('input[name="source"]')) {
+      f.addEventListener("submit", () => { submitted = true; safeRemove(draftKey); });
+    }
+  });
 
   // ---- 相手の様子を数秒ごとに確かめる ----
   const partnerLight = shrine.querySelector(".light.partner");

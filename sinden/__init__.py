@@ -98,6 +98,14 @@ def create_app(config=None):
         """static/ にファイルがあるか（CC0 の写真を置いたら、図の代わりに使う）"""
         return os.path.isfile(os.path.join(app.static_folder, filename))
 
+    @app.url_defaults
+    def static_version(endpoint, values):
+        """static の URL にファイルの更新時刻を付ける（直したら、ブラウザが古いものを使わない）"""
+        if endpoint == "static" and "filename" in values and "v" not in values:
+            path = os.path.join(app.static_folder, values["filename"])
+            if os.path.isfile(path):
+                values["v"] = int(os.path.getmtime(path))
+
     @app.errorhandler(403)
     def forbidden(error):
         return render_template("errors/403.html"), 403

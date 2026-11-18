@@ -32,6 +32,21 @@ def test_invite_accept_and_agree(aoi, hikaru, login_as):
     assert "いまは聴く番です" in a.get(f"/shrine/{visit.id}").get_data(as_text=True)
 
 
+def test_番の数が画面に出て_届けるたびに変わる(aoi, hikaru, login_as):
+    # 入力中の下書きは番ごとに分けて保存するため（前の番の文章が残らないように）
+    visit, a, h = open_shrine(aoi, hikaru, login_as)
+    assert 'data-turn="0"' in h.get(f"/shrine/{visit.id}").get_data(as_text=True)
+    speak(h, visit, "帰りが遅くて不安だった")
+    assert 'data-turn="1"' in a.get(f"/shrine/{visit.id}").get_data(as_text=True)
+
+
+def test_JSとCSSのURLには更新時刻が付く(aoi, hikaru, login_as):
+    visit, _a, h = open_shrine(aoi, hikaru, login_as)
+    text = h.get(f"/shrine/{visit.id}").get_data(as_text=True)
+    assert "/static/shrine.js?v=" in text
+    assert "/static/sinden.css?v=" in text
+
+
 def test_shrine_opens_only_when_partner_accepts(aoi, hikaru, login_as):
     a = login_as(aoi)
     a.post("/shrine/invite", data={"theme": "night"})
