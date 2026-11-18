@@ -61,6 +61,20 @@ def test_learn_free_and_locked(app, aoi, hikaru, login_as):
     assert "例：家事の分担" not in locked
 
 
+def test_学びの一覧はローマ数字の巻物で_無料とプランの印が付く(app):
+    page = app.test_client().get("/learn/").get_data(as_text=True)
+    assert "ふたりの書庫" in page
+    assert '<span class="scroll-num" aria-hidden="true">VI</span>' in page
+    assert '<span class="seal seal-free">無料</span>' in page
+    assert '<span class="seal">プラン</span>' in page
+
+
+def test_学びの記事には巻の番号が出る_ない記事は404(app):
+    client = app.test_client()
+    assert "巻 IV" in client.get("/learn/desc").get_data(as_text=True)
+    assert client.get("/learn/no-such-article").status_code == 404
+
+
 def test_learn_premium_reads_all(aoi, hikaru, login_as, premium):
     page = login_as(aoi).get("/learn/desc").get_data(as_text=True)
     assert "例：家事の分担" in page

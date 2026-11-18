@@ -1,15 +1,38 @@
 {% extends "base.html" %}
 {% block title %}学び | Placaの祠{% endblock %}
+{% block body_class %}learn{% endblock %}
 {% block content %}
-<h1>学び</h1>
-<p>自分も相手も大切にする伝え方（アサーション）、感情との付き合い方、より良い聴き方。</p>
-{% for a in articles %}
-  <article>
-    <h3>
-      <a href="{{ url_for('learn.show', slug=a.slug) }}">{{ a.title }}</a>
-      {% if a.free %}<mark>無料</mark>{% elif not can_read(a) %}<small>（プラン）</small>{% endif %}
-    </h3>
-    <p>{{ a.summary }}</p>
-  </article>
-{% endfor %}
+<section class="learn-hero{% if static_exists('img/bg-learn.jpg') %} with-photo{% endif %}"
+         {% if static_exists('img/bg-learn.jpg') %}style="--photo:url('{{ url_for('static', filename='img/bg-learn.jpg') }}')"{% endif %}>
+  <div class="learn-hero-copy">
+    <p class="learn-label">ふたりの書庫</p>
+    <h1>学び</h1>
+    <p>自分も相手も大切にする伝え方（アサーション）、<br>感情との付き合い方、より良い聴き方。</p>
+  </div>
+</section>
+
+<p class="learn-intro">祠を出たあと、ふたりで少しずつ読める巻物を集めました。<br>喧嘩をしていない、穏やかな日に読むのがおすすめです。</p>
+
+<ol class="scrolls">
+  {% for a in articles %}
+    <li>
+      <a href="{{ url_for('learn.show', slug=a.slug) }}" class="scroll">
+        <span class="scroll-num" aria-hidden="true">{{ loop.index|roman }}</span>
+        <span class="scroll-body">
+          <strong class="scroll-title">{{ a.title }}</strong>
+          <span class="scroll-summary">{{ a.summary }}</span>
+        </span>
+        {% if a.free %}
+          <span class="seal seal-free">無料</span>
+        {% elif not can_read(a) %}
+          <span class="seal">プラン</span>
+        {% endif %}
+      </a>
+    </li>
+  {% endfor %}
+</ol>
+
+{% if static_exists('img/bg-learn.jpg') %}
+  <p class="learn-credit"><small>写真：ケルスス図書館（エフェソス、2世紀。ローマ時代の図書館の遺跡）。撮影 Jona Lendering / Livius.org（CC0）</small></p>
+{% endif %}
 {% endblock %}

@@ -1,34 +1,48 @@
 {% extends "base.html" %}
 {% block title %}{{ article.title }} | Placaの祠{% endblock %}
+{% block body_class %}learn{% endblock %}
 {% block content %}
-<h1>{{ article.title }}</h1>
-<p><em>{{ article.summary }}</em></p>
-{% if readable %}
-  {% for s in article.sections %}
-    <h2>{{ s.heading }}</h2>
-    {% for p in s.paragraphs %}<p>{{ p }}</p>{% endfor %}
-    {% if s.examples %}
-      <table>
-        <thead><tr><th>言いがちな言葉</th><th>言い換えると</th></tr></thead>
-        <tbody>
-          {% for before, after in s.examples %}
-            <tr><td>{{ before }}</td><td>{{ after }}</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    {% endif %}
-  {% endfor %}
-{% else %}
-  <h2>{{ article.sections[0].heading }}</h2>
-  <p>{{ article.sections[0].paragraphs[0] }}</p>
-  <article>
-    続きは、プランで読めます。
-    {% if current_user.is_authenticated %}
-      <a href="{{ url_for('billing.index') }}">プランを見る</a>
-    {% else %}
-      <a href="{{ url_for('auth.register') }}">ふたりで登録する</a>
-    {% endif %}
-  </article>
-{% endif %}
-<p><a href="{{ url_for('learn.index') }}">学びの一覧へ</a></p>
+<p class="learn-back"><a href="{{ url_for('learn.index') }}">← ふたりの書庫へ</a></p>
+
+<article class="parchment">
+  <header>
+    <p class="learn-label">巻 {{ number|roman }}</p>
+    <h1>{{ article.title }}</h1>
+    <p class="parchment-summary">{{ article.summary }}</p>
+  </header>
+
+  {% if readable %}
+    {% for s in article.sections %}
+      <h2>{{ s.heading }}</h2>
+      {% for p in s.paragraphs %}<p>{{ p }}</p>{% endfor %}
+      {% if s.examples %}
+        <div class="overflow-auto">
+          <table>
+            <thead><tr><th>言いがちな言葉</th><th>言い換えると</th></tr></thead>
+            <tbody>
+              {% for before, after in s.examples %}
+                <tr><td>{{ before }}</td><td>{{ after }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% endif %}
+    {% endfor %}
+  {% else %}
+    <h2>{{ article.sections[0].heading }}</h2>
+    <p>{{ article.sections[0].paragraphs[0] }}</p>
+    <div class="parchment-locked">
+      <p>この巻物の続きは、プランで読めます。</p>
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('billing.index') }}" role="button">プランを見る</a>
+      {% else %}
+        <a href="{{ url_for('auth.register') }}" role="button">ふたりで登録する</a>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <footer class="parchment-end" aria-hidden="true">❦</footer>
+</article>
+
+<p class="learn-back"><a href="{{ url_for('learn.index') }}">← ふたりの書庫へ</a></p>
 {% endblock %}

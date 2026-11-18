@@ -71,6 +71,7 @@ uv run flask run --debug        # http://127.0.0.1:8001
 | `img/goddess.png` | 女神の像（背景を透明にした PNG がおすすめ） |
 | `img/bg-night.jpg` | 夜の祠の背景 |
 | `img/bg-morning.jpg` | ローマの朝の背景 |
+| `img/bg-learn.jpg` | 学び（ふたりの書庫）の帯。ケルスス図書館、撮影 Jona Lendering / Livius.org（CC0） |
 
 ヴィリプラカの像は現存しないため、発表や画面では「ローマ時代の女性像を女神のイメージとして使用」と明記します。
 
