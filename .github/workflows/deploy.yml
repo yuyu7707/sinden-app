@@ -51,6 +51,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          # つなぐ先が本当に本番サーバーかを、ホスト鍵の指紋で確かめる（公開してよい値）
-          fingerprint: "SHA256:dN8hHwByhzmRtv5cyZajki2ZVYMIOzayUofYFoNJelY"
+          # つなぐ先が本当に本番サーバーかを、ホスト鍵の指紋で確かめる（公開してよい値）。
+          # この Action は ECDSA の鍵を使うので、ECDSA の指紋を書く
+          fingerprint: "SHA256:MvXLF3S07IcGUViu9v+nbzXzYnHLYCips08FuYv8a9U"
           script: bash /var/www/sinden-app/deploy.sh
