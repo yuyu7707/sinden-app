@@ -16,7 +16,9 @@
 
 - ドメインは [sslip.io](https://sslip.io)（IP アドレスをそのまま名前にする無料のサービス）。https は音声入力（ブラウザの音声認識）に必要
 - `.env` はサーバーにだけ置く（`chmod 600`）。DB のパスワードと `SECRET_KEY` はサーバーの中で作り、外に出していない
-- `SESSION_COOKIE_SECURE=1`（https だけでログインの Cookie を送る）
+- `SESSION_COOKIE_SECURE=1`（https だけでログインの Cookie を送る。書かなくても本番では 1 と同じ）
+- ログイン・登録の回数制限は、数を各 worker のメモリに持つ。worker が 2 なので、上限は最大で設定の 2 倍になる。再起動すると数は 0 に戻る
+- Stripe を使うときは `STRIPE_SECRET_KEY` と `STRIPE_WEBHOOK_SECRET` を必ず両方書く（片方だけだと起動しない）
 
 ## 初めて公開したときの手順（2026-11-18）
 
