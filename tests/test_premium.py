@@ -80,6 +80,34 @@ def test_learn_premium_reads_all(aoi, hikaru, login_as, premium):
     assert "例：家事の分担" in page
 
 
+def test_学びは12巻あり_新しい記事もプランで全文が読める(
+    app, aoi, hikaru, login_as, premium
+):
+    listing = app.test_client().get("/learn/").get_data(as_text=True)
+    assert '<span class="scroll-num" aria-hidden="true">XII</span>' in listing
+    assert "子どもの前で喧嘩してしまったら" in listing
+
+    client = login_as(aoi)
+    for slug in [
+        "timeout",
+        "four-habits",
+        "repair",
+        "same-fight",
+        "children",
+        "thanks",
+    ]:
+        assert client.get(f"/learn/{slug}").status_code == 200
+    page = client.get("/learn/four-habits").get_data(as_text=True)
+    assert "巻 VIII" in page
+    assert "相談窓口" in page
+
+
+def test_新しい記事はプランでないと続きが読めない(app):
+    page = app.test_client().get("/learn/timeout").get_data(as_text=True)
+    assert "続きは、プラン" in page
+    assert "休んでいる間にすること" not in page
+
+
 def make_kept_visit(aoi, hikaru, index):
     visit = Visit(
         pair_id=aoi.pair_id,

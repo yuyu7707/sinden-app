@@ -5,7 +5,23 @@ from sinden.content import ARTICLES, find_article
 
 bp = Blueprint("learn", __name__, url_prefix="/learn")
 
-ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"]
+ROMAN = [
+    "I",
+    "II",
+    "III",
+    "IV",
+    "V",
+    "VI",
+    "VII",
+    "VIII",
+    "IX",
+    "X",
+    "XI",
+    "XII",
+    "XIII",
+    "XIV",
+    "XV",
+]
 
 
 @bp.app_template_filter("roman")
