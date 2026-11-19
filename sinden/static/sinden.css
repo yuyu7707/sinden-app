@@ -1024,17 +1024,15 @@ body.learn {
   .parchment-end::before, .parchment-end::after { width: 3rem; }
 }
 
-/* ===== トップページ：写真の四角い枠を見せない =====
-   写真は小さい状態から大きくなるので、途中で写真の端が暗闇の中に見えてしまう。
-   外側ほど透明にして、写真の端を夜空に溶けこませる */
-.lp-scene.with-photo .lp-photo {
-  -webkit-mask-image: radial-gradient(ellipse 62% 58% at 56% 62%, #000 55%, transparent 100%);
-  mask-image: radial-gradient(ellipse 62% 58% at 56% 62%, #000 55%, transparent 100%);
+/* ===== トップページ：写真の端を画面に入れない =====
+   写真を小さい状態から大きくすると、途中で写真の端が夜空の中に見えてしまう。
+   最初から画面いっぱいの写真を、真っ暗から明るくしながら、少しだけ近づける（100% → 106%）。
+   写真はいつも画面より大きいので、端は一度も見えない */
+.lp-scene.with-photo { animation-name: lp-approach-photo; }
+@keyframes lp-approach-photo {
+  0% { transform: scale(1); filter: brightness(0.12); }
+  100% { transform: scale(1.06); filter: brightness(1); }
 }
-/* スマホは画面が縦長で、写真の端が近いので、もっと内側から溶けこませる */
-@media (max-width: 600px) {
-  .lp-scene.with-photo .lp-photo {
-    -webkit-mask-image: radial-gradient(ellipse 60% 48% at 56% 62%, #000 35%, transparent 100%);
-    mask-image: radial-gradient(ellipse 60% 48% at 56% 62%, #000 35%, transparent 100%);
-  }
+@media (prefers-reduced-motion: reduce) {
+  .lp-scene.with-photo { animation: none; }
 }
