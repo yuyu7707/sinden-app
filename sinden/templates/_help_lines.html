@@ -9,4 +9,17 @@
     {% endfor %}
   </tbody>
 </table>
+<h3>気持ちがつらいとき</h3>
+<p><small>「死にたい」「消えたい」ほどつらいときは、ここへ。どちらも24時間、無料です。</small></p>
+<table>
+  <tbody>
+    {% for name, number, note in mind_lines %}
+      <tr>
+        <th scope="row">{{ name }}</th>
+        <td><strong>{{ number }}</strong></td>
+        <td><small>{{ note }}</small></td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
 <p><small>祠の「危険の気配」の判定（言葉の確認と女神の判定）は完全ではありません。案内が出ていなくても、危険を感じたら、ためらわずに相談してください。</small></p>

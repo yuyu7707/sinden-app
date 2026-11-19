@@ -9,5 +9,6 @@
   {{ field(form.password) }}
   <button type="submit">ログイン</button>
 </form>
+<p><small>パスワードの再設定はできません。忘れたときは、新しく登録し直してください（これまでの記録は戻りません）。</small></p>
 <p>はじめての方は <a href="{{ url_for('auth.register') }}">登録</a></p>
 {% endblock %}

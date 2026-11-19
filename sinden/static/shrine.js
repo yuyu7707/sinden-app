@@ -33,14 +33,14 @@
     const s = String(remaining % 60).padStart(2, "0");
     timer.textContent = `${m}:${s}`;
   };
+  // 持ち時間が0になっても、自動では届けない（届くのは、本人が「届ける」を押した言葉だけ）。
+  // 「1分以内なら届けられる」と知らせる。サーバーは、持ち時間の60秒後に番を相手に渡す
+  const timeUp = document.getElementById("time-up");
   if (timer) {
     setInterval(() => {
       remaining = Math.max(0, remaining - 1);
       render();
-      if (remaining === 0 && form && !timer.dataset.passive && !submitted) {
-        submitted = true;
-        form.requestSubmit();
-      }
+      if (remaining === 0 && timeUp && !timer.dataset.passive) timeUp.hidden = false;
     }, 1000);
   }
 

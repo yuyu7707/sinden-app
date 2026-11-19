@@ -7,6 +7,7 @@ from wtforms import (
     StringField,
     TextAreaField,
 )
+from wtforms.fields.choices import SelectChoice
 from wtforms.validators import DataRequired, Length, Regexp
 
 from sinden.models import Theme
@@ -59,7 +60,10 @@ class JoinPairForm(FlaskForm):
 class InviteForm(FlaskForm):
     theme = RadioField(
         "祠の版",
-        choices=[(Theme.NIGHT, "夜の祠"), (Theme.MORNING, "ローマの朝（プラン）")],
+        choices=[
+            SelectChoice(Theme.NIGHT, "夜の祠"),
+            SelectChoice(Theme.MORNING, "ローマの朝（プラン）"),
+        ],
         default=Theme.NIGHT,
     )
 

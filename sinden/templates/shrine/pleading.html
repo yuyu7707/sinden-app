@@ -9,7 +9,7 @@
       <p class="mirror-text">{{ my_last.mirror }}</p>
     {% elif my_last.mirror_note %}
       <p><small>{{ my_last.mirror_note }}</small></p>
-      {% if '追加で購入' in my_last.mirror_note %}
+      {% if offers_purchase(my_last.mirror_note) %}
         <p><small><a href="{{ url_for('billing.index') }}#mirrors" target="_blank" rel="noopener">女神の鏡を追加で購入する（別の画面で開きます）</a></small></p>
       {% endif %}
     {% endif %}
@@ -25,6 +25,7 @@
     {% if partner_present %}{{ partner.name }}さんが隣で聴いています{% else %}{{ partner.name }}さんの灯りが消えています{% endif %}
   </p>
   <p class="timer">残り <span id="timer" data-remaining="{{ remaining }}">{{ remaining // 60 }}:{{ '%02d' % (remaining % 60) }}</span></p>
+  <p id="time-up" class="presence" role="status" hidden>持ち時間です。届けるなら、1分以内に「届ける」を押してください。過ぎると番が相手に移り、書きかけの言葉は届きません。</p>
 
   {% if visit.draft_text is none %}
     {# ① 書く・話す #}
@@ -78,7 +79,7 @@
           <p class="mirror-text">{{ visit.draft_mirror }}</p>
         {% elif visit.draft_note %}
           <p><small>{{ visit.draft_note }}</small></p>
-          {% if '追加で購入' in visit.draft_note %}
+          {% if offers_purchase(visit.draft_note) %}
             <p><small><a href="{{ url_for('billing.index') }}#mirrors" target="_blank" rel="noopener">女神の鏡を追加で購入する（別の画面で開きます）</a></small></p>
           {% endif %}
         {% endif %}

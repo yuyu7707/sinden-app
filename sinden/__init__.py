@@ -6,7 +6,8 @@ from flask_login import current_user
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from sinden.extensions import csrf, db, limiter, login_manager, migrate
-from sinden.services import ai, payment
+from sinden.services import ai, payment, plans
+from sinden.services.safety import MIND_LINES
 
 WEEKDAYS = "月火水木金土日"
 
@@ -26,7 +27,8 @@ def create_app(config=None):
         SESSION_COOKIE_SAMESITE="Lax",
         ANTHROPIC_API_KEY=os.environ.get("ANTHROPIC_API_KEY", ""),
         ANTHROPIC_MODEL=os.environ.get("ANTHROPIC_MODEL", "claude-opus-5-5"),
-        # 女神の鏡を待つ上限（秒）と、1回の応答の長さの上限
+        # 女神の鏡を待つ上限（秒。再試行はしない）と、1回の応答の長さの上限。
+        # サーバーの待ち時間（gunicorn の timeout）より短くすること（docs/deploy.md）
         AI_TIMEOUT_SECONDS=30,
         AI_MAX_TOKENS=4000,
         STRIPE_SECRET_KEY=os.environ.get("STRIPE_SECRET_KEY", ""),
@@ -39,16 +41,18 @@ def create_app(config=None):
         # 訴えの最大文字数（5分で話せる量より少し多め）
         PLEA_MAX_CHARS=3000,
         # 女神の鏡を1人が月に使える回数。プランの30回は、3日に1回喧嘩しても足りる量。
-        # 1回 約3.3円（Opus 5.5、5分の訴え）なので、使い切っても黒字になる
+        # 1回 約4.5円（Opus 5.5、5分の訴え。鏡と灯をまとめて作る）なので、使い切っても黒字になる
         MIRROR_FREE_PER_MONTH=3,
         MIRROR_PREMIUM_PER_MONTH=30,
-        # 使い切ったときの追加購入（1回払い）。10回 100円なら、AI の費用 約33円で黒字
+        # 使い切ったときの追加購入（1回払い）。10回 100円なら、AI の費用 約45円で黒字
         MIRROR_PACK_SIZE=10,
         PRICE_MIRROR_PACK=int(os.environ.get("PRICE_MIRROR_PACK", "100")),
         # 1回の祠で、1人が使える上限
         MIRROR_PER_VISIT=10,
         # 無料プランで振り返れる記録の数
         RECORDS_FREE=3,
+        # 送信できる大きさの上限（バイト）。訴え・手紙・Stripe の通知には十分な大きさ
+        MAX_CONTENT_LENGTH=1_000_000,
         # テストではフェイクを渡す。None なら本物のモジュールを使う
         AI_SERVICE=None,
         PAYMENT_SERVICE=None,
@@ -91,6 +95,10 @@ def create_app(config=None):
     from sinden import commands
 
     commands.init_app(app)
+
+    # 相談窓口（気持ちがつらいとき）と、鏡の追加購入のリンクを出すかの判定を、テンプレートから使う
+    app.jinja_env.globals["mind_lines"] = MIND_LINES
+    app.jinja_env.globals["offers_purchase"] = plans.offers_purchase
 
     @app.template_filter("yen")
     def yen(value: int) -> str:

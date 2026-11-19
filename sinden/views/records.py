@@ -47,10 +47,13 @@ def index():
 @pair_required
 def show(visit_id):
     visit = db.session.get(Visit, visit_id)
-    if visit is None or not visit.kept:
+    if visit is None:
         abort(404)
+    # 取得したら先にメンバーか確かめる（他人には、記録の有無も知らせない）
     if not visit.is_member(current_user):
         abort(403)
+    if not visit.kept:
+        abort(404)
     if not current_user.pair.is_premium:
         free_ids = [
             v.id
