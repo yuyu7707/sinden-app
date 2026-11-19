@@ -72,7 +72,7 @@ def test_success_and_timeout_setting(with_key, monkeypatch):
         "わたしは…",
     )
     assert FakeClient.last_kwargs["timeout"] == 30
-    assert FakeClient.last_kwargs["max_retries"] == 1
+    assert FakeClient.last_kwargs["max_retries"] == 0
 
 
 @pytest.mark.parametrize(

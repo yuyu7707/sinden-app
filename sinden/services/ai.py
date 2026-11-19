@@ -86,11 +86,11 @@ def reflect(text: str) -> Reflection:
     """訴えの文章から、女神の鏡・危険の気配・ことばの灯をまとめて作る"""
     if not current_app.config.get("ANTHROPIC_API_KEY"):
         raise AIError("女神の鏡は、いまは使えません（API キーが未設定です）。")
-    # 訴えを送った人を長く待たせないよう、時間を区切る（既定は30秒。再試行は1回まで）
+    # 訴えを送った人を長く待たせず、サーバーの worker を長く占めないよう、30秒で区切る（再試行はしない）
     client = anthropic.Anthropic(
         api_key=current_app.config["ANTHROPIC_API_KEY"],
         timeout=current_app.config["AI_TIMEOUT_SECONDS"],
-        max_retries=1,
+        max_retries=0,
     )
     try:
         response = client.beta.messages.create(

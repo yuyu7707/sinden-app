@@ -174,3 +174,9 @@ def premium(pair):
 
 
 __all__ = ["AIError"]
+
+
+@pytest.fixture
+def client_anon(app):
+    """ログインしていないブラウザ"""
+    return app.test_client()

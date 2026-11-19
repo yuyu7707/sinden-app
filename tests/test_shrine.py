@@ -82,12 +82,14 @@ def test_plea_passes_turn_and_mirror_only_for_author(aoi, hikaru, login_as, fake
     assert "鏡：" not in partner_page
 
 
-def test_empty_plea_just_passes_turn(aoi, hikaru, login_as):
+def test_empty_plea_is_not_delivered_and_keeps_turn(aoi, hikaru, login_as):
     visit, _a, h = open_shrine(aoi, hikaru, login_as)
-    h.post(f"/shrine/{visit.id}/plea", data={"body": "  "})
+    res = h.post(f"/shrine/{visit.id}/plea", data={"body": "  "}, follow_redirects=True)
     db.session.refresh(visit)
-    assert visit.current_speaker_id == aoi.id
+    # 何も書かずに押しても、番は替わらない
+    assert visit.current_speaker_id == hikaru.id
     assert visit.pleas == []
+    assert "届ける言葉を書いてください" in res.get_data(as_text=True)
 
 
 def test_plea_too_long(aoi, hikaru, login_as, app):

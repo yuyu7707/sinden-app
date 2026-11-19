@@ -19,7 +19,7 @@ from sqlalchemy.orm.attributes import flag_modified
 from sinden.decorators import pair_required
 from sinden.extensions import db
 from sinden.forms import InviteForm, PleaForm
-from sinden.models import Plea, Theme, Visit, VisitStatus, now
+from sinden.models import Pair, Plea, Theme, Visit, VisitStatus, now
 from sinden.services import plans
 from sinden.services.ai import AIError
 from sinden.services.safety import HELP_LINES, has_danger_words
@@ -43,8 +43,10 @@ def get_visit(visit_id: int) -> Visit:
 
 
 def get_locked_visit(visit_id: int) -> Visit:
-    """ふたりが同時に押す操作（終える・残す）用。行をロックして、最新の内容を読み直す。
-    ロックしないと、2人が同時に押したとき互いの選択が見えず、祠が先へ進まない"""
+    """祠の状態を変える操作（応じる・取り消す・掟に従う・届ける・出る・残す・中断する）用。
+    行をロックして、最新の内容を読み直す。
+    ロックしないと、2人が同時に押したとき互いの選択が見えず、祠が先へ進まない。
+    （鏡を作る reflect だけは、AI を待つあいだロックしないので、条件付きの UPDATE で守る）"""
     visit = get_visit(visit_id)
     db.session.refresh(visit, with_for_update=True)
     return visit
@@ -72,6 +74,17 @@ DRAFT_FIELDS = (
     "draft_note",
     "draft_danger",
 )
+
+
+def close_without_record(visit: Visit) -> None:
+    """記録を残さずに祠を終える。訴えと下書きを消す（中断と「残さない」で共通）"""
+    visit.status = VisitStatus.CLOSED
+    visit.kept = False
+    visit.ended_at = now()
+    visit.current_speaker_id = None
+    visit.turn_started_at = None
+    clear_draft(visit)
+    visit.pleas.clear()
 
 
 def clear_draft(visit: Visit) -> None:
@@ -113,11 +126,17 @@ def invite():
     form = InviteForm()
     if not form.validate_on_submit():
         abort(400)
+    # 2人が同時に誘っても祠が2つできないよう、ペアの行をロックしてから調べる
+    db.session.scalar(
+        db.select(Pair).filter_by(id=current_user.pair_id).with_for_update()
+    )
     visit = active_visit(current_user.pair)
     if visit is not None:
+        db.session.rollback()
         return back(visit)
     theme = form.theme.data
     if theme == Theme.MORNING and not current_user.pair.is_premium:
+        db.session.rollback()
         flash("ローマの朝の祠は、どちらかがプランに入ると選べます")
         return redirect(url_for("billing.index"))
     visit = Visit(
@@ -197,7 +216,7 @@ def state(visit_id):
 @bp.route("/<int:visit_id>/accept", methods=["POST"])
 @pair_required
 def accept(visit_id):
-    visit = get_visit(visit_id)
+    visit = get_locked_visit(visit_id)
     if visit.status == VisitStatus.INVITED and visit.invitee_id == current_user.id:
         visit.status = VisitStatus.RULES
         db.session.commit()
@@ -207,7 +226,7 @@ def accept(visit_id):
 @bp.route("/<int:visit_id>/cancel", methods=["POST"])
 @pair_required
 def cancel(visit_id):
-    visit = get_visit(visit_id)
+    visit = get_locked_visit(visit_id)
     if visit.status == VisitStatus.INVITED:
         visit.status = VisitStatus.CANCELLED
         visit.ended_at = now()
@@ -219,7 +238,8 @@ def cancel(visit_id):
 @bp.route("/<int:visit_id>/agree", methods=["POST"])
 @pair_required
 def agree(visit_id):
-    visit = get_visit(visit_id)
+    # 2人が同時に押しても、互いの「従った」が見えるように、ロックして読み直す
+    visit = get_locked_visit(visit_id)
     if visit.status == VisitStatus.RULES:
         visit.set_flag("agreed", current_user, True)
         if visit.both("agreed"):
@@ -329,24 +349,28 @@ def plea(visit_id):
         # 灯の文章はフォームから受け取らず、サーバーに保存した案を使う
         body = visit.draft_lamp
         source = "lamp"
+    elif not body:
+        # 何も書かずに押したときに、黙って番が移らないようにする
+        db.session.rollback()
+        flash("届ける言葉を書いてください")
+        return back(visit)
     elif has_draft:
         source = "own" if body == visit.draft_text else "edited"
     else:
         source = "own"
 
-    if body:
-        db.session.add(
-            Plea(
-                visit=visit,
-                user=current_user,
-                seq=len(visit.pleas) + 1,
-                body=body,
-                mirror=visit.draft_mirror if has_draft else None,
-                mirror_note=visit.draft_note if has_draft else None,
-                danger=(has_draft and visit.draft_danger) or has_danger_words(body),
-                source=source,
-            )
+    db.session.add(
+        Plea(
+            visit=visit,
+            user=current_user,
+            seq=len(visit.pleas) + 1,
+            body=body,
+            mirror=visit.draft_mirror if has_draft else None,
+            mirror_note=visit.draft_note if has_draft else None,
+            danger=(has_draft and visit.draft_danger) or has_danger_words(body),
+            source=source,
         )
+    )
     pass_turn(visit)
     db.session.commit()
     return back(visit)
@@ -376,14 +400,16 @@ def keep(visit_id):
     choice = request.form.get("keep")
     if choice not in ("yes", "no"):
         abort(400)
-    visit.set_flag("keep", current_user, choice == "yes")
-    if visit.inviter_keep is not None and visit.invitee_keep is not None:
-        visit.status = VisitStatus.CLOSED
-        visit.ended_at = now()
-        visit.kept = visit.both("keep")
-        if not visit.kept:
-            # どちらかが「残さない」なら、訴えはすべて消す
-            visit.pleas.clear()
+    if choice == "no":
+        # 「残さない」は、相手の返事を待たずに、その場で訴えを消して終える
+        visit.set_flag("keep", current_user, False)
+        close_without_record(visit)
+    else:
+        visit.set_flag("keep", current_user, True)
+        if visit.both("keep"):
+            visit.status = VisitStatus.CLOSED
+            visit.ended_at = now()
+            visit.kept = True
     db.session.commit()
     return back(visit)
 
@@ -400,13 +426,7 @@ def stop(visit_id):
     if visit.status not in (VisitStatus.RULES, VisitStatus.PLEADING):
         db.session.rollback()
         return back(visit)
-    visit.status = VisitStatus.CLOSED
-    visit.kept = False
-    visit.ended_at = now()
-    visit.current_speaker_id = None
-    visit.turn_started_at = None
-    clear_draft(visit)
-    visit.pleas.clear()
+    close_without_record(visit)
     db.session.commit()
     flash("祠を中断しました。今回の訴えは残していません")
     return redirect(url_for("home.index"))

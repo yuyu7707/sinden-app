@@ -17,6 +17,11 @@
 - ドメインは [sslip.io](https://sslip.io)（IP アドレスをそのまま名前にする無料のサービス）。https は音声入力（ブラウザの音声認識）に必要
 - `.env` はサーバーにだけ置く（`chmod 600`）。DB のパスワードと `SECRET_KEY` はサーバーの中で作り、外に出していない
 - `SESSION_COOKIE_SECURE=1`（https だけでログインの Cookie を送る。書かなくても本番では 1 と同じ）
+- **gunicorn の並び方**：女神の鏡は、AI の返事を待つあいだ worker を1本使う（最長30秒。アプリ側は再試行なし）。同期型の worker 2本のままだと、2人が同時に「ことばを確かめる」を押すだけで、全員の3秒ごとの確認が待たされる。そこで、スレッドを使って1本の worker が4つ同時に処理できるようにしている（2026-11-19 に変更）。待ち時間（`--timeout 120`）は、AI の30秒より長い。systemd の `ExecStart` は次のとおり
+  ```
+  /home/ubuntu/.local/bin/uv run --frozen --no-dev gunicorn "sinden:create_app()" --bind 127.0.0.1:8001 --workers 2 --worker-class gthread --threads 4 --timeout 120
+  ```
+  変えたら `sudo systemctl daemon-reload && sudo systemctl restart sinden-app`。変える前の控えは、サーバーの `~/sinden-app.service.bak-20261119`
 - ログイン・登録の回数制限は、数を各 worker のメモリに持つ。worker が 2 なので、上限は最大で設定の 2 倍になる。再起動すると数は 0 に戻る
 - Stripe を使うときは `STRIPE_SECRET_KEY` と `STRIPE_WEBHOOK_SECRET` を必ず両方書く（片方だけだと起動しない）
 

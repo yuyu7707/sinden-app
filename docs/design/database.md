@@ -171,14 +171,14 @@ stateDiagram-v2
     rules --> pleading : ふたりとも掟に従う
     pleading --> pleading : 訴える・番の交代
     pleading --> reconciled : ふたりとも祠を出る
-    reconciled --> closed : ふたりとも選ぶ
+    reconciled --> closed : ふたりとも残す／どちらかが残さない（すぐ）
     rules --> closed : 祠を中断する（ひとりで）
     pleading --> closed : 祠を中断する（ひとりで）
     closed --> [*]
     cancelled --> [*]
 ```
 
-- 1組のペアで、続いている訪問（invited / rules / pleading / reconciled）は1つまで
+- 1組のペアで、続いている訪問（invited / rules / pleading / reconciled）は1つまで（誘うとき、ペアの行をロックしてから調べて守る。DB の制約ではない）
 
 ### pleas（訴え）
 
@@ -239,7 +239,7 @@ stateDiagram-v2
 
 | 何を | どうなる |
 |-|-|
-| 記録を「残さない」 | その訪問の `pleas` を全て削除する。`visits` は状態 closed・kept=false で残す（いつ和解したかだけ残る）。`mirror_uses` は残す |
+| 記録を「残さない」 | どちらか一方が押した時点で（相手の返事を待たず）、その訪問の `pleas` を全て削除する。`visits` は状態 closed・kept=false で残す（いつ和解したかだけ残る）。`mirror_uses` は残す |
 | 祠を中断する | 「残さない」と同じ。`pleas` を削除、`visits.draft_*` を消し、closed・kept=false |
 | 退会（`auth.delete_account`） | 1つのトランザクションで次の順に消す：① ペアの `pleas` ② ペアの `visits` ③ ペアの `letters` ④ 本人の `mirror_uses` ⑤ 本人の `purchases` ⑥ ペアに誰も残らなければ、ペアの `purchases` と `pairs`。残るなら `pairs.invite_code` を作り直す ⑦ 本人の `users` |
 

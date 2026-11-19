@@ -11,6 +11,16 @@ from flask import current_app
 from sinden.extensions import db
 from sinden.models import MirrorUse, User, Visit, now
 
+# プランの人が今月の回数を使い切ったときの理由。この文のときだけ、購入のリンクを出す
+MONTHLY_LIMIT_PREMIUM = (
+    "今月の女神の鏡の上限に達しました。追加で購入すると続けて使えます。"
+)
+
+
+def offers_purchase(note: str | None) -> bool:
+    """この理由の下に、鏡の追加購入のリンクを出すか（文章の一部を探さず、ここで決める）"""
+    return note == MONTHLY_LIMIT_PREMIUM
+
 
 def month_start(at: datetime | None = None) -> datetime:
     at = at or now()
@@ -54,7 +64,7 @@ def mirror_block_reason(visit: Visit, user: User) -> str | None:
         return "今回の祠では、女神の鏡の上限に達しました。"
     if mirrors_left_this_month(user) <= 0:
         if user.is_premium:
-            return "今月の女神の鏡の上限に達しました。追加で購入すると続けて使えます。"
+            return MONTHLY_LIMIT_PREMIUM
         return "今月の無料の女神の鏡は使い切りました。プランに入ると続けて使えます。"
     return None
 
