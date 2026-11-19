@@ -2,12 +2,16 @@ from urllib.parse import urlsplit
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from sinden.extensions import db, limiter, login_manager
 from sinden.forms import LoginForm, RegisterForm
 from sinden.models import User
 
 bp = Blueprint("auth", __name__)
+
+# 照合の時間をそろえるための、どのパスワードとも合わない値
+DUMMY_HASH = generate_password_hash("placa-no-hokora-dummy")
 
 
 @login_manager.user_loader
@@ -61,6 +65,9 @@ def login():
         user = db.session.scalar(
             db.select(User).filter_by(email=form.email.data.strip().lower())
         )
+        if user is None:
+            # 登録されていないメールでも同じだけ時間をかけ、応答の速さで見分けられないようにする
+            check_password_hash(DUMMY_HASH, form.password.data)
         if user is None or not user.check_password(form.password.data):
             flash("メールアドレスかパスワードが違います")
             return render_template("auth/login.html", form=form), 422

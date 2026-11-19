@@ -41,6 +41,14 @@ def get_visit(visit_id: int) -> Visit:
     return visit
 
 
+def get_locked_visit(visit_id: int) -> Visit:
+    """ふたりが同時に押す操作（終える・残す）用。行をロックして、最新の内容を読み直す。
+    ロックしないと、2人が同時に押したとき互いの選択が見えず、祠が先へ進まない"""
+    visit = get_visit(visit_id)
+    db.session.refresh(visit, with_for_update=True)
+    return visit
+
+
 def back(visit: Visit):
     return redirect(url_for("shrine.show", visit_id=visit.id))
 
@@ -231,11 +239,18 @@ def reflect(visit_id):
     if not body:
         flash("訴えを書くか、声で話してから確かめてください")
         return back(visit)
-    if visit.draft_text is not None:
-        # 1回の番で映せるのは1回まで（AI の回数を守るため）
+    # 1回の番で映せるのは1回まで（AI の回数を守るため）。
+    # 二重に押されても AI を2回呼ばないよう、「下書きがまだない」ときだけ下書きを置けた方が進む
+    claimed = db.session.execute(
+        db.update(Visit)
+        .where(Visit.id == visit.id, Visit.draft_text.is_(None))
+        .values(draft_text=body)
+    )
+    if claimed.rowcount != 1:
+        db.session.rollback()
         return back(visit)
+    db.session.commit()
 
-    visit.draft_text = body
     visit.draft_mirror = None
     visit.draft_lamp = None
     visit.draft_danger = has_danger_words(body)
@@ -294,7 +309,7 @@ def plea(visit_id):
 @bp.route("/<int:visit_id>/leave", methods=["POST"])
 @pair_required
 def leave(visit_id):
-    visit = get_visit(visit_id)
+    visit = get_locked_visit(visit_id)
     if visit.status == VisitStatus.PLEADING:
         visit.set_flag("leave", current_user, request.form.get("stay") != "1")
         if visit.both("leave"):
@@ -309,7 +324,7 @@ def leave(visit_id):
 @bp.route("/<int:visit_id>/keep", methods=["POST"])
 @pair_required
 def keep(visit_id):
-    visit = get_visit(visit_id)
+    visit = get_locked_visit(visit_id)
     if visit.status != VisitStatus.RECONCILED:
         return back(visit)
     choice = request.form.get("keep")
