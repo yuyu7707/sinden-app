@@ -3,7 +3,7 @@ from flask_login import current_user, login_required
 
 from sinden.extensions import db
 from sinden.forms import InviteForm, JoinPairForm
-from sinden.models import Letter, Pair, Visit, VisitStatus, new_invite_code
+from sinden.models import Letter, Pair, User, Visit, VisitStatus, new_invite_code
 from sinden.services import plans
 from sinden.services.safety import HELP_LINES
 
@@ -92,8 +92,20 @@ def join_pair():
         return redirect(url_for("home.index"))
     if form.validate_on_submit():
         code = form.code.data.strip().upper()
-        pair = db.session.scalar(db.select(Pair).filter_by(invite_code=code))
-        if pair is None or pair.is_complete:
+        # 2人が同時に同じコードで入って3人にならないよう、ペアの行をロックしてから数える。
+        # 人数もロック付きで読む（MySQL では、ロックなしだと古い内容が見えることがある）
+        pair = db.session.scalar(
+            db.select(Pair).filter_by(invite_code=code).with_for_update()
+        )
+        members = (
+            db.session.scalars(
+                db.select(User.id).filter_by(pair_id=pair.id).with_for_update()
+            ).all()
+            if pair is not None
+            else []
+        )
+        if pair is None or len(members) >= 2:
+            db.session.rollback()
             flash("その招待コードは使えません")
             return redirect(url_for("home.index"))
         current_user.pair = pair

@@ -1,3 +1,5 @@
+import pytest
+
 from sinden.extensions import db
 from sinden.models import User
 from tests.conftest import make_user
@@ -106,3 +108,49 @@ def test_ペアがなければホームは自動で確かめない(app, login_as
     client = login_as(solo)
     assert client.get("/home/state").get_json()["version"] == "none"
     assert "home.js" not in client.get("/").get_data(as_text=True)
+
+
+# ---- ログイン後の戻り先（next） ----
+
+
+@pytest.mark.parametrize(
+    "target",
+    [
+        "https://evil.example/",
+        "//evil.example/",
+        "/\\evil.example/",
+        "\\\\evil.example/",
+        "/\t/evil.example/",
+        "/\n/evil.example/",
+        "javascript:alert(1)",
+        "evil.example",
+    ],
+)
+def test_login_next_rejects_outside(app, target):
+    make_user("a@example.com", "あおい")
+    res = app.test_client().post(
+        "/login",
+        query_string={"next": target},
+        data={"email": "a@example.com", "password": "password"},
+    )
+    assert res.status_code == 302
+    assert res.headers["Location"] == "/"
+
+
+def test_login_next_allows_own_path(app):
+    make_user("a@example.com", "あおい")
+    res = app.test_client().post(
+        "/login",
+        query_string={"next": "/records?page=2"},
+        data={"email": "a@example.com", "password": "password"},
+    )
+    assert res.headers["Location"] == "/records?page=2"
+
+
+def test_full_pair_code_rejected_with_message(aoi, hikaru, login_as):
+    third = make_user("c@example.com", "さんにんめ")
+    res = login_as(third).post(
+        "/pair/join", data={"code": aoi.pair.invite_code}, follow_redirects=True
+    )
+    assert "その招待コードは使えません" in res.get_data(as_text=True)
+    assert len(aoi.pair.members) == 2
