@@ -55,7 +55,10 @@
   <footer class="container no-print site-footer">
     <small>
       <a href="{{ url_for('home.about') }}">祠の由来</a> ・
-      <a href="{{ url_for('home.help_lines') }}">ひとりで抱えないで（相談窓口）</a>
+      <a href="{{ url_for('home.help_lines') }}">ひとりで抱えないで（相談窓口）</a><br>
+      <a href="{{ url_for('home.terms') }}">利用規約</a> ・
+      <a href="{{ url_for('home.privacy') }}">プライバシーポリシー</a>
+      {% if current_user.is_authenticated %} ・ <a href="{{ url_for('auth.withdraw') }}">退会</a>{% endif %}
     </small>
   </footer>
   {% block scripts %}{% endblock %}

@@ -9,6 +9,11 @@
   {{ field(form.name) }}
   {{ field(form.email) }}
   {{ field(form.password) }}
+  <p><small>
+    登録すると、<a href="{{ url_for('home.terms') }}" target="_blank">利用規約</a>と
+    <a href="{{ url_for('home.privacy') }}" target="_blank">プライバシーポリシー</a>に同意したものとします。
+    「ことばを確かめる」を押した訴えは、女神の鏡を作るため Anthropic 社の Claude API に送られます。
+  </small></p>
   <button type="submit">登録する</button>
 </form>
 <p>登録済みの方は <a href="{{ url_for('auth.login') }}">ログイン</a></p>

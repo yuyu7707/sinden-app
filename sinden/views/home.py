@@ -121,6 +121,16 @@ def help_lines():
     return render_template("home/help.html", lines=HELP_LINES)
 
 
+@bp.route("/privacy")
+def privacy():
+    return render_template("home/privacy.html")
+
+
+@bp.route("/terms")
+def terms():
+    return render_template("home/terms.html")
+
+
 @bp.route("/about")
 def about():
     return render_template("home/about.html")
