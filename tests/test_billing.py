@@ -217,3 +217,68 @@ def test_free_limit_links_only_to_plan(aoi, hikaru, login_as, fake_ai):
     page = h.get(f"/shrine/{visit.id}").get_data(as_text=True)
     assert "プランに入ると続けて使えます" in page
     assert "女神の鏡を追加で購入する" not in page
+
+
+# ---- 監査の指摘への対応 ----
+
+
+def test_apply_purchase_twice_adds_once(aoi, hikaru, login_as, fake_payment):
+    """完了画面と Webhook が同時に来ても、追加分は1回だけ足す"""
+    from sqlalchemy.orm.attributes import set_committed_value
+
+    from sinden.views.billing import apply_purchase
+
+    a = login_as(aoi)
+    buy(a, aoi, "solo", fake_payment)
+    a.post("/billing/checkout/mirrors")
+    purchase = db.session.scalars(
+        db.select(Purchase).order_by(Purchase.id.desc())
+    ).first()
+    session = paid_session()
+    # 1回目の反映。2回目は、まだ pending だと思っている古いオブジェクトで呼ぶ
+    apply_purchase(purchase, session)
+    db.session.commit()
+    # 同時に読んだ別の処理の見え方を再現する（DB は paid のまま）
+    set_committed_value(purchase, "status", "pending")
+    apply_purchase(purchase, session)
+    db.session.commit()
+    db.session.refresh(aoi)
+    assert aoi.extra_mirrors == 10
+
+
+def test_extra_mirrors_do_not_go_negative(aoi, hikaru, login_as, fake_ai, premium):
+    visit, _a, _h = open_shrine(aoi, hikaru, login_as)
+    use_mirrors(hikaru, 30)
+    plans.record_mirror_use(visit, hikaru)
+    db.session.commit()
+    db.session.refresh(hikaru)
+    assert hikaru.extra_mirrors == 0
+
+
+def test_webhook_rejected_without_secret(app):
+    from sinden.services import payment
+    from sinden.services.payment import WebhookError
+
+    app.config["STRIPE_WEBHOOK_SECRET"] = ""
+    with app.test_request_context():
+        try:
+            payment.parse_webhook(b"{}", "t=1,v1=x")
+        except WebhookError:
+            pass
+        else:
+            raise AssertionError("秘密鍵が空でも受け付けてしまった")
+
+
+def test_app_refuses_stripe_without_webhook_secret():
+    import pytest
+
+    from sinden import create_app
+
+    with pytest.raises(RuntimeError):
+        create_app(
+            {
+                "TESTING": True,
+                "STRIPE_SECRET_KEY": "sk_test_x",
+                "STRIPE_WEBHOOK_SECRET": "",
+            }
+        )

@@ -61,6 +61,11 @@ def mirror_block_reason(visit: Visit, user: User) -> str | None:
 
 def record_mirror_use(visit: Visit, user: User) -> None:
     """鏡を1回使ったことを記録する。今月の回数を使い切っていれば、追加購入分から1回減らす"""
-    if monthly_left(user) <= 0 and user.extra_mirrors > 0:
-        user.extra_mirrors -= 1
+    if monthly_left(user) <= 0:
+        # 減算は DB の中で計算し、0 より下にはしない（同時に使われても数がずれない）
+        db.session.execute(
+            db.update(User)
+            .where(User.id == user.id, User.extra_mirrors > 0)
+            .values(extra_mirrors=User.extra_mirrors - 1)
+        )
     db.session.add(MirrorUse(user_id=user.id, visit_id=visit.id))

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "_form_errors.html" import field %}
+{% block title %}退会 | Placaの祠{% endblock %}
+{% block content %}
+<h1>退会する</h1>
+<p>退会すると、次のものが消え、もとに戻せません。</p>
+<ul>
+  <li>あなたのアカウント（呼び名・メールアドレス・パスワード）</li>
+  <li>ふたりの祠の訴え・女神の鏡・残した記録（{% if current_user.partner %}{{ current_user.partner.name }}さんの分も含めて{% else %}相手の分も含めて{% endif %}）</li>
+  <li>ふたりの間の手紙（送ったもの・受け取ったもの）</li>
+</ul>
+<p><small>
+  {% if current_user.partner %}{{ current_user.partner.name }}さんのアカウントは残ります。{% endif %}
+  支払いの記録は、法律で決められた期間、決済会社（Stripe）に残ります。
+</small></p>
+<form method="post">
+  {{ form.hidden_tag() }}
+  {{ field(form.password) }}
+  <label>
+    {{ form.confirm() }} {{ form.confirm.label.text }}
+  </label>
+  {% for error in form.confirm.errors %}<small>{{ error }}</small>{% endfor %}
+  <button type="submit" class="secondary">退会する</button>
+</form>
+<p><a href="{{ url_for('home.index') }}">やめて、ホームへ戻る</a></p>
+{% endblock %}

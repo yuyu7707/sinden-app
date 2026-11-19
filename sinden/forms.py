@@ -1,5 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import (
+    BooleanField,
     EmailField,
     PasswordField,
     RadioField,
@@ -35,6 +36,14 @@ class RegisterForm(FlaskForm):
 class LoginForm(FlaskForm):
     email = EmailField("メールアドレス", validators=[DataRequired(), EMAIL])
     password = PasswordField("パスワード", validators=[DataRequired()])
+
+
+class WithdrawForm(FlaskForm):
+    password = PasswordField("いまのパスワード", validators=[DataRequired()])
+    confirm = BooleanField(
+        "祠の記録と手紙が、ふたりとも見られなくなることを理解しました",
+        validators=[DataRequired(message="確認の印を付けてください")],
+    )
 
 
 class JoinPairForm(FlaskForm):

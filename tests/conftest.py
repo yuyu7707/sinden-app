@@ -90,6 +90,8 @@ def app(fake_ai, fake_payment):
             "TESTING": True,
             "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
             "WTF_CSRF_ENABLED": False,
+            # 回数制限は tests/test_rate_limit.py で確かめる
+            "RATELIMIT_ENABLED": False,
             "AI_SERVICE": fake_ai,
             "PAYMENT_SERVICE": fake_payment,
         }

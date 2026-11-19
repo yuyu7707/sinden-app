@@ -4,7 +4,7 @@ import os
 from flask import Flask, render_template
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from sinden.extensions import csrf, db, login_manager, migrate
+from sinden.extensions import csrf, db, limiter, login_manager, migrate
 from sinden.services import ai, payment
 
 WEEKDAYS = "月火水木金土日"
@@ -19,7 +19,10 @@ def create_app(config=None):
         SQLALCHEMY_DATABASE_URI=os.environ.get(
             "DATABASE_URL", "sqlite:///sinden.sqlite"
         ),
-        SESSION_COOKIE_SECURE=os.environ.get("SESSION_COOKIE_SECURE") == "1",
+        # 本番（https）では Secure を既定にする。開発・テストでは下で外す
+        SESSION_COOKIE_SECURE=os.environ.get("SESSION_COOKIE_SECURE", "1") == "1",
+        # 他のサイトからの POST に、ログインの Cookie を付けない
+        SESSION_COOKIE_SAMESITE="Lax",
         ANTHROPIC_API_KEY=os.environ.get("ANTHROPIC_API_KEY", ""),
         ANTHROPIC_MODEL=os.environ.get("ANTHROPIC_MODEL", "claude-opus-5-5"),
         # 女神の鏡を待つ上限（秒）と、1回の応答の長さの上限
@@ -51,14 +54,27 @@ def create_app(config=None):
     )
     if config is not None:
         app.config.update(config)
+    # http://localhost の開発サーバーとテストでは、Secure だとログインが続かない。
+    # 環境変数か config で明示したときは、その値を使う
+    secure_given = "SESSION_COOKIE_SECURE" in os.environ or (
+        config is not None and "SESSION_COOKIE_SECURE" in config
+    )
+    if (app.debug or app.testing) and not secure_given:
+        app.config["SESSION_COOKIE_SECURE"] = False
     if app.config["SECRET_KEY"] == "dev" and not (app.debug or app.testing):
         raise RuntimeError(
             "SECRET_KEY を .env（本番は EnvironmentFile）に設定してください"
+        )
+    # Stripe を使うのに Webhook の秘密鍵が空だと、署名の確認が意味をなさない
+    if app.config["STRIPE_SECRET_KEY"] and not app.config["STRIPE_WEBHOOK_SECRET"]:
+        raise RuntimeError(
+            "STRIPE_SECRET_KEY を使うときは STRIPE_WEBHOOK_SECRET も設定してください"
         )
 
     db.init_app(app)
     migrate.init_app(app, db)
     csrf.init_app(app)
+    limiter.init_app(app)
     login_manager.init_app(app)
     login_manager.login_view = "auth.login"
     login_manager.login_message = "ログインしてください"
@@ -106,6 +122,17 @@ def create_app(config=None):
             if os.path.isfile(path):
                 values["v"] = int(os.path.getmtime(path))
 
+    @app.after_request
+    def security_headers(response):
+        # 他のサイトの枠（iframe）に入れさせない。種類の推測をさせない。
+        # 外のサイトへ移るとき、URL（祠の番号など）を渡さない
+        response.headers.setdefault("X-Frame-Options", "DENY")
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault(
+            "Referrer-Policy", "strict-origin-when-cross-origin"
+        )
+        return response
+
     @app.errorhandler(403)
     def forbidden(error):
         return render_template("errors/403.html"), 403
@@ -113,6 +140,10 @@ def create_app(config=None):
     @app.errorhandler(404)
     def not_found(error):
         return render_template("errors/404.html"), 404
+
+    @app.errorhandler(429)
+    def too_many_requests(error):
+        return render_template("errors/429.html"), 429
 
     logging.basicConfig(level=logging.INFO)
     return app

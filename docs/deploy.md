@@ -16,7 +16,9 @@
 
 - ドメインは [sslip.io](https://sslip.io)（IP アドレスをそのまま名前にする無料のサービス）。https は音声入力（ブラウザの音声認識）に必要
 - `.env` はサーバーにだけ置く（`chmod 600`）。DB のパスワードと `SECRET_KEY` はサーバーの中で作り、外に出していない
-- `SESSION_COOKIE_SECURE=1`（https だけでログインの Cookie を送る）
+- `SESSION_COOKIE_SECURE=1`（https だけでログインの Cookie を送る。書かなくても本番では 1 と同じ）
+- ログイン・登録の回数制限は、数を各 worker のメモリに持つ。worker が 2 なので、上限は最大で設定の 2 倍になる。再起動すると数は 0 に戻る
+- Stripe を使うときは `STRIPE_SECRET_KEY` と `STRIPE_WEBHOOK_SECRET` を必ず両方書く（片方だけだと起動しない）
 
 ## 初めて公開したときの手順（2026-11-18）
 
@@ -36,11 +38,27 @@
 
 ## 更新するとき
 
-手元で main に push したあと、サーバーで次を実行する。
+**自動デプロイ**：main に入ると（PR のマージ、または push）、GitHub Actions の `deploy` がテストを流し、通ったら SSH でサーバーの `deploy.sh` を実行する（`.github/workflows/deploy.yml`）。Actions の画面で `deploy` を選び「Run workflow」でも動かせる。
+
+`deploy.sh` は、git pull → uv sync → flask db upgrade → 再起動 → トップページが返るかの確認、の順に進む。
+
+手で更新するときは、サーバーで次を実行する。
 
 ```
 bash /var/www/sinden-app/deploy.sh
 ```
+
+### GitHub の Secrets（初回だけ。marche-app と同じ値）
+
+リポジトリの Settings → Secrets and variables → Actions → New repository secret で、次の3つを登録する。
+
+| 名前 | 値 |
+|-|-|
+| `SSH_HOST` | サーバーの IP アドレス |
+| `SSH_USER` | `ubuntu` |
+| `SSH_PRIVATE_KEY` | サーバーに入る秘密鍵の中身（`-----BEGIN` から `END-----` の行まで全部） |
+
+登録する前に main へ入れると、`deploy` は失敗する（テストは通る）。
 
 ## API キーを入れるとき
 

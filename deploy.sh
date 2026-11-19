@@ -24,4 +24,17 @@ echo "==> 2 秒待って、起動したか確かめます"
 sleep 2
 systemctl is-active sinden-app
 
+echo "==> トップページが返るか確かめます"
+# 設定の誤り（SECRET_KEY や Stripe の鍵の不足）で起動に失敗していたら、ここで止まる
+for i in 1 2 3 4 5; do
+  if curl -fsS -o /dev/null http://127.0.0.1:8001/; then
+    break
+  fi
+  if [ "$i" = 5 ]; then
+    echo "トップページが返りません。sudo journalctl -u sinden-app -n 50 --no-pager で確かめてください"
+    exit 1
+  fi
+  sleep 2
+done
+
 echo "==> 更新が終わりました"

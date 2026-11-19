@@ -5,6 +5,7 @@ views からは current_app.extensions["ai"] 経由で呼ぶ（テストでは�
 """
 
 import json
+import re
 from dataclasses import dataclass
 
 import anthropic
@@ -73,6 +74,14 @@ class Reflection:
     lamp: str  # ことばの灯（危険の気配があるときは空）
 
 
+PLEA_TAG = re.compile(r"<\s*/?\s*plea\b[^>]*>", re.IGNORECASE)
+
+
+def strip_plea_tags(text: str) -> str:
+    """訴えの中に <plea> や </plea> を書いて、囲みの外に指示を出せないようにする"""
+    return PLEA_TAG.sub("", text)
+
+
 def reflect(text: str) -> Reflection:
     """訴えの文章から、女神の鏡・危険の気配・ことばの灯をまとめて作る"""
     if not current_app.config.get("ANTHROPIC_API_KEY"):
@@ -89,7 +98,9 @@ def reflect(text: str) -> Reflection:
             # 鏡は200字以内。考える分（low）を含めても足りる長さで、使いすぎを防ぐ上限
             max_tokens=current_app.config["AI_MAX_TOKENS"],
             system=SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": f"<plea>\n{text}\n</plea>"}],
+            messages=[
+                {"role": "user", "content": f"<plea>\n{strip_plea_tags(text)}\n</plea>"}
+            ],
             output_config={
                 "effort": "low",
                 "format": {"type": "json_schema", "schema": OUTPUT_SCHEMA},
@@ -128,5 +139,8 @@ def reflect(text: str) -> Reflection:
             lamp="" if danger else str(data.get("lamp", "")).strip(),
         )
     except (ValueError, KeyError, TypeError) as e:
-        current_app.logger.warning("鏡の結果を読めませんでした: %r", raw[:200])
+        # 結果には訴えの内容が含まれうるので、ログには文字数と種類だけを残す
+        current_app.logger.warning(
+            "鏡の結果を読めませんでした（%d文字、%s）", len(raw), type(e).__name__
+        )
         raise AIError("女神の鏡を映せませんでした。") from e
