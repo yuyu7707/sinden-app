@@ -5,7 +5,8 @@
 - Flask + Flask-SQLAlchemy（SQLAlchemy 2.x の `Mapped` / `mapped_column`）。定義は `sinden/models.py`
 - DB は開発 **SQLite**（`instance/sinden.sqlite`、テストはメモリ上）、本番 **MySQL**（PyMySQL）。**文字列のカラムには長さを付け、SQLite 専用の SQL や関数を使わない**
 - テーブルは7つ：`pairs`、`users`、`visits`、`pleas`、`mirror_uses`、`purchases`、`letters`
-- 日時は日本時間のまま保存する（タイムゾーンなし）
+- 日時は日本時間（Asia/Tokyo）のまま、タイムゾーンなしで保存する。日本国内だけで使う前提。現在時刻は `models.now()` が Asia/Tokyo を明示して作る（サーバーの設定に頼らない。本番サーバーと MySQL も Asia/Tokyo）
+- 外部キーに `ON DELETE CASCADE` は付けない。消すときはアプリが順番に消す（下の「削除したときの動き」）
 
 ## ER 図
 
@@ -91,7 +92,7 @@ erDiagram
         string kind "solo / pair / mirrors"
         int amount "円"
         string session_id UK "nullable（Stripe Checkout）"
-        string status "pending / paid"
+        string status "pending / paid / duplicate"
         datetime created_at
         datetime paid_at "nullable"
     }
@@ -134,7 +135,7 @@ erDiagram
 | plan | String(10) | | 自分で支払ったプラン（solo / pair） |
 | stripe_customer_id | String(255) | | Stripe の顧客 |
 | stripe_subscription_id | String(255) | | Stripe の月額契約 |
-| subscription_status | String(30) | | Stripe の契約の状態（Webhook で更新） |
+| subscription_status | String(30) | | Stripe の契約の状態（Webhook を受けて Stripe から取り直す）。active / trialing / past_due / unpaid / incomplete / paused / canceled / incomplete_expired |
 | extra_mirrors | Integer | ○ | 追加購入した鏡の残り。既定 0 |
 | created_at | DateTime | ○ | |
 
@@ -171,6 +172,8 @@ stateDiagram-v2
     pleading --> pleading : 訴える・番の交代
     pleading --> reconciled : ふたりとも祠を出る
     reconciled --> closed : ふたりとも選ぶ
+    rules --> closed : 祠を中断する（ひとりで）
+    pleading --> closed : 祠を中断する（ひとりで）
     closed --> [*]
     cancelled --> [*]
 ```
@@ -214,10 +217,11 @@ stateDiagram-v2
 | kind | String(20) | ○ | solo（個人 500円/月）/ pair（ふたり 800円/月）/ mirrors（鏡の追加10回 100円） |
 | amount | Integer | ○ | 円。サーバーの設定から決める |
 | session_id | String(255) | | Stripe Checkout Session の ID（一意） |
-| status | String(20) | ○ | pending / paid |
+| status | String(20) | ○ | pending / paid / duplicate（契約中に2つ目の月額が支払われた。上書きせず、運営者が返金する） |
 | created_at / paid_at | DateTime | | |
 
-- 支払いの確定は、完了画面での確認と Webhook の両方で行う。何度届いても結果が同じになるようにする
+- 支払いの確定は、完了画面での確認と Webhook の両方で行う。`pending` を `paid` に変えられた方だけが反映する（条件付き UPDATE）。何度届いても結果が同じ
+- 契約の状態（`users.subscription_status`）は、Webhook を受けたら Stripe から取り直した値で上書きする。canceled・incomplete_expired になったあとは変えない（要件の「プランと契約の状態」）
 
 ### letters（手紙）
 
@@ -236,7 +240,21 @@ stateDiagram-v2
 | 何を | どうなる |
 |-|-|
 | 記録を「残さない」 | その訪問の `pleas` を全て削除する。`visits` は状態 closed・kept=false で残す（いつ和解したかだけ残る）。`mirror_uses` は残す |
-| ユーザー・ペア | 削除の機能は作らない（やらないこと） |
+| 祠を中断する | 「残さない」と同じ。`pleas` を削除、`visits.draft_*` を消し、closed・kept=false |
+| 退会（`auth.delete_account`） | 1つのトランザクションで次の順に消す：① ペアの `pleas` ② ペアの `visits` ③ ペアの `letters` ④ 本人の `mirror_uses` ⑤ 本人の `purchases` ⑥ ペアに誰も残らなければ、ペアの `purchases` と `pairs`。残るなら `pairs.invite_code` を作り直す ⑦ 本人の `users` |
+
+- 退会しても、相手の `users` と `mirror_uses`・`purchases` は残す
+- Stripe 側の顧客・支払いの記録は消さない（API を呼ばない）。`users.stripe_*` は行ごと消える
+
+### 誰が読めるか（列ごと）
+
+| 列 | 読める人 |
+|-|-|
+| `pleas.body` | ペアの2人 |
+| `pleas.mirror`・`mirror_note`・`danger` | 書いた本人だけ |
+| `visits.draft_text`・`draft_mirror`・`draft_lamp`・`draft_note`・`draft_danger` | 話し手本人だけ（自分の番の間） |
+| `letters.*` | 送った人と受け取った人 |
+| `users.email`・`stripe_*` | 本人だけ（相手には呼び名だけ見せる） |
 
 ## マイグレーション
 
