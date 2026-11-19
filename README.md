@@ -29,6 +29,8 @@ SESSION_COOKIE_SECURE=0
 
 `SECRET_KEY` は `uv run python -c "import secrets; print(secrets.token_hex(32))"` で作れます。
 
+`STRIPE_SECRET_KEY` と `STRIPE_WEBHOOK_SECRET` は、**両方書くか、両方空**にします。片方だけだと、Webhook の署名を確かめられないため、アプリは起動しません。支払いを試さないなら両方空で動きます（プランの申し込みだけが使えません）。
+
 ### 2. 起動する
 
 ```
@@ -50,9 +52,11 @@ uv run flask run --debug        # http://127.0.0.1:8001
 
 `uv run flask set-premium a@example.com` で、Stripe を通さずにペアを特別プラン（ふたりとも全機能）にできます（`--off` で戻す）。
 
-### 3. 支払い（Stripe）を試す
+### 3. 支払い（Stripe）を試す（任意）
 
-1. Stripe のダッシュボードを**テストモード**にして、シークレットキーを `.env` に書く
+Stripe のテスト用のキーで、手元のパソコンで支払いを試す手順です。試さなくても、ほかの機能はすべて動きます。
+
+1. Stripe のダッシュボードを**テストモード**にして、シークレットキーを `.env` の `STRIPE_SECRET_KEY` に書く（まだ再起動しない。`STRIPE_WEBHOOK_SECRET` が空のままだと起動しないため）
 2. 月額プランの解約画面を使うため、ダッシュボードの「設定 → Billing → カスタマーポータル」を有効にする
 3. 別のターミナルで Webhook を転送する（Stripe CLI）
    ```
