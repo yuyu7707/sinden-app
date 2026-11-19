@@ -112,3 +112,25 @@ def test_policy_pages(app):
 def test_withdraw_page_names_partner(aoi, hikaru, login_as):
     page = login_as(aoi).get("/account/delete").get_data(as_text=True)
     assert "ひかるさんの分も含めて" in page
+
+
+def test_withdraw_changes_invite_code(aoi, hikaru, login_as):
+    old_code = aoi.pair.invite_code
+    withdraw(login_as(aoi))
+    db.session.expire_all()
+    assert hikaru.pair.invite_code != old_code
+    # 古いコードでは、もう入れない
+    again = make_user("a2@example.com", "あおい（再登録）")
+    login_as(again).post("/pair/join", data={"code": old_code})
+    db.session.refresh(again)
+    assert again.pair is None
+
+
+def test_cannot_withdraw_with_unpaid_subscription(aoi, hikaru, login_as):
+    aoi.plan = "solo"
+    aoi.stripe_subscription_id = "sub_x"
+    aoi.subscription_status = "unpaid"
+    db.session.commit()
+    res = withdraw(login_as(aoi))
+    assert res.headers["Location"].endswith("/billing")
+    assert db.session.get(User, aoi.id) is not None

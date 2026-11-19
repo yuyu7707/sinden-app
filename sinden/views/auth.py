@@ -6,7 +6,15 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from sinden.extensions import db, limiter, login_manager
 from sinden.forms import LoginForm, RegisterForm, WithdrawForm
-from sinden.models import Letter, MirrorUse, Plea, Purchase, User, Visit
+from sinden.models import (
+    Letter,
+    MirrorUse,
+    Plea,
+    Purchase,
+    User,
+    Visit,
+    new_invite_code,
+)
 
 bp = Blueprint("auth", __name__)
 
@@ -107,13 +115,28 @@ def delete_account(user: User) -> None:
     ):
         db.session.execute(db.delete(Purchase).where(Purchase.pair_id == pair.id))
         db.session.delete(pair)
+    elif pair is not None:
+        # 退会した人が登録し直して、手元に残った古いコードで相手のペアに戻れないようにする
+        pair.invite_code = new_invite_code()
     db.session.delete(user)
+
+
+def subscription_remains(user: User) -> bool:
+    """解約していない契約が残っているか（Stripe の支払い待ち・未払いも含む）"""
+    if user.has_subscription:
+        return True
+    return bool(user.stripe_subscription_id) and user.subscription_status not in (
+        "canceled",
+        "incomplete_expired",
+    )
 
 
 @bp.route("/account/delete", methods=["GET", "POST"])
 @login_required
+# Cookie を盗まれたときに、パスワードを総当たりされないように
+@limiter.limit("5 per minute;20 per hour", methods=["POST"])
 def withdraw():
-    if current_user.has_subscription:
+    if subscription_remains(current_user):
         flash("プランに入っている間は退会できません。先にプランを解約してください")
         return redirect(url_for("billing.index"))
     form = WithdrawForm()
