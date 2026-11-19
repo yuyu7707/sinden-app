@@ -1023,3 +1023,18 @@ body.learn {
   .parchment-end { font-size: 2.2rem; }
   .parchment-end::before, .parchment-end::after { width: 3rem; }
 }
+
+/* ===== トップページ：写真の四角い枠を見せない =====
+   写真は小さい状態から大きくなるので、途中で写真の端が暗闇の中に見えてしまう。
+   外側ほど透明にして、写真の端を夜空に溶けこませる */
+.lp-scene.with-photo .lp-photo {
+  -webkit-mask-image: radial-gradient(ellipse 62% 58% at 56% 62%, #000 55%, transparent 100%);
+  mask-image: radial-gradient(ellipse 62% 58% at 56% 62%, #000 55%, transparent 100%);
+}
+/* スマホは画面が縦長で、写真の端が近いので、もっと内側から溶けこませる */
+@media (max-width: 600px) {
+  .lp-scene.with-photo .lp-photo {
+    -webkit-mask-image: radial-gradient(ellipse 60% 48% at 56% 62%, #000 35%, transparent 100%);
+    mask-image: radial-gradient(ellipse 60% 48% at 56% 62%, #000 35%, transparent 100%);
+  }
+}
