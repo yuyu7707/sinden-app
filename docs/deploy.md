@@ -36,11 +36,27 @@
 
 ## 更新するとき
 
-手元で main に push したあと、サーバーで次を実行する。
+**自動デプロイ**：main に入ると（PR のマージ、または push）、GitHub Actions の `deploy` がテストを流し、通ったら SSH でサーバーの `deploy.sh` を実行する（`.github/workflows/deploy.yml`）。Actions の画面で `deploy` を選び「Run workflow」でも動かせる。
+
+`deploy.sh` は、git pull → uv sync → flask db upgrade → 再起動 → トップページが返るかの確認、の順に進む。
+
+手で更新するときは、サーバーで次を実行する。
 
 ```
 bash /var/www/sinden-app/deploy.sh
 ```
+
+### GitHub の Secrets（初回だけ。marche-app と同じ値）
+
+リポジトリの Settings → Secrets and variables → Actions → New repository secret で、次の3つを登録する。
+
+| 名前 | 値 |
+|-|-|
+| `SSH_HOST` | サーバーの IP アドレス |
+| `SSH_USER` | `ubuntu` |
+| `SSH_PRIVATE_KEY` | サーバーに入る秘密鍵の中身（`-----BEGIN` から `END-----` の行まで全部） |
+
+登録する前に main へ入れると、`deploy` は失敗する（テストは通る）。
 
 ## API キーを入れるとき
 
