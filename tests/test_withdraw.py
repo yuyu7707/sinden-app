@@ -103,6 +103,7 @@ def test_policy_pages(app):
     assert "Claude API" in privacy
     assert "Stripe" in privacy
     assert "音声認識" in privacy
+    assert "https://forms.gle/" in privacy
     assert "利用規約" in client.get("/terms").get_data(as_text=True)
     # 足元と登録画面からたどれる
     assert "/privacy" in client.get("/").get_data(as_text=True)
