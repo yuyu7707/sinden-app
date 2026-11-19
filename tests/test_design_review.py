@@ -194,3 +194,11 @@ def test_reconciled_says_couples_choice(aoi, hikaru, login_as):
     page = a.get(f"/shrine/{visit.id}").get_data(as_text=True)
     assert "ふたりの選択：和解" in page
     assert "判決" not in page
+
+
+def test_no_verdict_word_on_story_pages(app):
+    client = app.test_client()
+    for url in ("/", "/about"):
+        page = client.get(url).get_data(as_text=True)
+        assert "判決" not in page
+        assert "ふたりが選んだのは、いつも「和解」でした" in page

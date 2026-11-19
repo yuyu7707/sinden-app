@@ -32,7 +32,7 @@
 - 学びの記事は `sinden/content.py`
 - 日時は日本時間（Asia/Tokyo）をタイムゾーンなしで保存する。現在時刻は必ず `models.now()` を使い、`datetime.now()` を直接書かない
 - 契約の状態は Webhook の中身を信じず、`payment.retrieve_subscription` で取り直す
-- 和解の画面の言葉は「ふたりの選択：和解」（「判決」は使わない。伝説を語る文だけは別）
+- 和解は「ふたりの選択」として書く（和解の画面は「ふたりの選択：和解」）。女神は裁かないので、伝説を語る文も含めて「判決」は使わない
 - 女神の像・背景は `templates/shrine/_stage.html`。`static/img/` に CC0 写真を置くと差し替わる
 
 ## このプロジェクトの決まり
