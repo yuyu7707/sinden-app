@@ -165,6 +165,29 @@ body.in-shrine.theme-morning { background: #fbf6ea; }
   .stage.intro .scene, .stage.intro .goddess, .stage.intro .lights { animation: none; }
 }
 
+/* 夜の祠の近づく演出：トップページと同じ動きにする（トップの「写真の端を画面に入れない」と同じ考え）。
+   写真は最初から画面いっぱい。真っ暗から明るくしながら、少しだけ近づく（100% → 106%）。
+   写真はいつも画面より大きいので、端は一度も見えない。トップの1.2倍のゆっくりさ。
+   終わった形（106%）を、演出のない画面（作り直したあと）でも保つので、画面が切り替わっても飛ばない */
+.theme-night .scene.has-photo { transform: scale(1.06); }
+.theme-night .stage.intro .scene.has-photo {
+  animation: approach-photo 7.8s cubic-bezier(0.2, 0.6, 0.25, 1) both;
+}
+@keyframes approach-photo {
+  0% { transform: scale(1); filter: brightness(0.12); }
+  100% { transform: scale(1.06); filter: brightness(1); }
+}
+/* 女神は、ぼかしから、ふわっと浮かんで出てくる（トップの lp-emerge と同じ） */
+.theme-night .stage.intro .goddess { animation: emerge-night 8.4s ease both; }
+@keyframes emerge-night {
+  0%, 40% { opacity: 0; transform: translate(-50%, 8%); filter: blur(6px) drop-shadow(0 0 18px rgba(255, 170, 80, 0.35)) brightness(0.9); }
+  100% { opacity: 1; transform: translate(-50%, 0); filter: blur(0) drop-shadow(0 0 18px rgba(255, 170, 80, 0.35)) brightness(0.9); }
+}
+.theme-night .stage.intro .lights { animation: lights 9s ease both; }
+@media (prefers-reduced-motion: reduce) {
+  .theme-night .stage.intro .scene.has-photo, .theme-night .stage.intro .goddess, .theme-night .stage.intro .lights { animation: none; }
+}
+
 .panel h2 { margin-bottom: 0.5rem; }
 .presence { color: var(--pico-muted-color); }
 .timer { font-variant-numeric: tabular-nums; font-size: 1.2rem; }
@@ -484,15 +507,17 @@ html.js .reveal.visible { opacity: 1; transform: none; }
 .lights.in-turn { align-items: flex-end; }
 .light .turn-label { font-size: 0.75rem; letter-spacing: 0.2em; opacity: 0.85; }
 /* 「話す」は金色の札にして、暗い背景でも朝の背景でも読めるようにする */
+/* 文字の影は !important で消す。朝の背景では、名前用の「.theme-morning … small」の黒い影の方が
+   優先順位が高く、「話す」の文字が黒くにじんで見えたため */
 .light.speaking .turn-label {
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0.25em;
-  padding: 0.15rem 0.4rem 0.15rem 0.65rem;
+  padding: 0.2rem 0.45rem 0.2rem 0.75rem;
   border-radius: 999px;
   background: var(--gold);
   color: #1a120a !important;
-  text-shadow: none;
+  text-shadow: none !important;
   opacity: 1;
   box-shadow: 0 0 12px rgba(217, 163, 91, 0.6);
 }
@@ -520,6 +545,21 @@ html.js .reveal.visible { opacity: 1; transform: none; }
   background:
     radial-gradient(ellipse at 50% 82%, rgba(255, 165, 70, 0.38), transparent 45%),
     linear-gradient(rgba(70, 40, 12, 0.35), rgba(5, 5, 12, 0.55));
+}
+/* 夜の祠：トップページと同じく、写真を画面の幅いっぱいに広げる（四角い箱に見えないように）。
+   角の丸みもなくす。横にはみ出して、横スクロールが出ないよう、body 側で切る */
+body.in-shrine.theme-night { overflow-x: clip; }
+.theme-night .stage {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  border-radius: 0;
+}
+/* 写真の下のふちだけ、画面の暗い色にとかす（女神と灯りはこの膜より前にあるので、暗くならない） */
+.theme-night .scene.has-photo::after {
+  content: "";
+  position: absolute; inset: 0;
+  pointer-events: none;
+  background: linear-gradient(transparent 72%, #0d0f1a 100%);
 }
 .theme-morning .scene.has-photo { background-position: center 62%; }
 .theme-morning .scene.has-photo::before {
