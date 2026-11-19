@@ -1,0 +1,9 @@
+{# どちらか一方だけで祠を終える。相手の同意はいらない #}
+<details class="stop">
+  <summary><small>祠を中断する</small></summary>
+  <p><small>ひとりで祠を終えられます。今回の訴えは残りません。{{ partner.name }}さんには「祠を後にしました」とだけ伝わり、理由は伝わりません。</small></p>
+  <form method="post" action="{{ url_for('shrine.stop', visit_id=visit.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="secondary outline">中断して祠を出る</button>
+  </form>
+</details>

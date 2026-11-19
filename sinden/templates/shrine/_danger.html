@@ -1,0 +1,10 @@
+{# 危険の気配の案内。書いた本人の画面にだけ入れる（聴く側の HTML には入れない） #}
+<div class="danger">
+  <p><strong>ひとりで抱えないでください。</strong>暴力や脅し、強い支配を感じるときは、和解よりもあなたの安全が大切です。</p>
+  {% include "_help_lines.html" %}
+  <form method="post" action="{{ url_for('shrine.stop', visit_id=visit.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="secondary outline">祠を中断する（ひとりで終えられます）</button>
+  </form>
+  <p><small>中断すると、今回の訴えは残りません。{{ partner.name }}さんに理由は伝わりません。</small></p>
+</div>

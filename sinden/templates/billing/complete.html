@@ -4,6 +4,10 @@
 {% if purchase.status == 'paid' %}
   <h1>ありがとうございます</h1>
   <p>{{ purchase.label }}{% if purchase.kind == 'mirrors' %}（{{ purchase.amount|yen }}）のお支払いが完了しました。女神の鏡を追加しました。{% else %}（{{ purchase.amount|yen }} / 月）のお支払いが完了しました。{% if purchase.kind == 'pair' %}ふたりとも、すべての機能を使えます。{% else %}あなたは、すべての機能を使えます。{% endif %}{% endif %}</p>
+{% elif purchase.status == 'duplicate' %}
+  <h1>すでにプランに入っています</h1>
+  <p>今回のお支払いは、すでに入っているプランと重なっていたため、反映していません。運営者が確認して返金します。</p>
+  <p><small>ご不明な点は、<a href="{{ url_for('home.privacy') }}#contact">プライバシーポリシーの「問い合わせ」</a>からご連絡ください。</small></p>
 {% else %}
   <h1>お支払いを確認しています</h1>
   <p>確認が済むまで、少し時間がかかることがあります。しばらくしてから、このページを開き直してください。</p>

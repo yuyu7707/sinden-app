@@ -9,11 +9,11 @@ from datetime import datetime
 from flask import current_app
 
 from sinden.extensions import db
-from sinden.models import MirrorUse, User, Visit
+from sinden.models import MirrorUse, User, Visit, now
 
 
 def month_start(at: datetime | None = None) -> datetime:
-    at = at or datetime.now()
+    at = at or now()
     return at.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
 

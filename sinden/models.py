@@ -1,6 +1,7 @@
 import secrets
 from datetime import datetime
 from typing import ClassVar
+from zoneinfo import ZoneInfo
 
 from flask_login import UserMixin
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
@@ -13,8 +14,16 @@ from sinden.extensions import db
 CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 
 
+# 日本国内だけで使う前提。日本時間をタイムゾーンなしで保存する（docs/design/database.md）
+JST = ZoneInfo("Asia/Tokyo")
+
+# 終わった契約。このあとは状態を変えない
+ENDED_SUBSCRIPTION = ("canceled", "incomplete_expired")
+
+
 def now() -> datetime:
-    return datetime.now()
+    """日本時間の現在時刻（タイムゾーンなし）。サーバーのタイムゾーン設定に頼らない"""
+    return datetime.now(JST).replace(tzinfo=None)
 
 
 def new_invite_code() -> str:
@@ -82,11 +91,12 @@ class User(UserMixin, db.Model):
 
     @property
     def has_subscription(self) -> bool:
-        """解約・カード変更の対象になる契約があるか（支払い遅れも含む）"""
-        return self.plan is not None and self.subscription_status in (
-            "active",
-            "trialing",
-            "past_due",
+        """解約・カード変更の対象になる契約が残っているか（支払い遅れ・未払いも含む）。
+        残っている間は、新しく申し込めず、退会もできない"""
+        return (
+            self.plan is not None
+            and self.subscription_status is not None
+            and self.subscription_status not in ENDED_SUBSCRIPTION
         )
 
     @property

@@ -14,10 +14,7 @@
       {% endif %}
     {% endif %}
     {% if my_last.danger %}
-      <div class="danger">
-        <p><strong>ひとりで抱えないでください。</strong>暴力や脅し、強い支配を感じるときは、和解よりもあなたの安全が大切です。</p>
-        {% include "_help_lines.html" %}
-      </div>
+      {% include "shrine/_danger.html" %}
     {% endif %}
   </details>
 {% endif %}
@@ -88,10 +85,7 @@
       </section>
 
       {% if visit.draft_danger %}
-        <div class="danger">
-          <p><strong>ひとりで抱えないでください。</strong>暴力や脅し、強い支配を感じるときは、和解よりもあなたの安全が大切です。</p>
-          {% include "_help_lines.html" %}
-        </div>
+        {% include "shrine/_danger.html" %}
       {% elif visit.draft_lamp %}
         <section class="lamp-card">
           <h3><span class="lamp-flame" aria-hidden="true"></span>ことばの灯</h3>
@@ -153,4 +147,5 @@
     <button type="submit" class="secondary outline">祠を出よう</button>
   </form>
 {% endif %}
+{% include "shrine/_stop.html" %}
 {% endblock %}

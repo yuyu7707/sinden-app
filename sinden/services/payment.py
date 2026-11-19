@@ -80,6 +80,16 @@ def retrieve_session(session_id: str) -> dict:
     return session.to_dict()
 
 
+def retrieve_subscription(subscription_id: str) -> dict:
+    """月額の契約の最新の状態を dict で返す。Webhook の中身は届く順が前後するので、こちらを正とする"""
+    try:
+        subscription = _client().v1.subscriptions.retrieve(subscription_id)
+    except stripe.StripeError as e:
+        current_app.logger.warning("Stripe の呼び出しに失敗: %r", e)
+        raise PaymentError("契約の状態を確認できませんでした。") from e
+    return subscription.to_dict()
+
+
 def create_portal_url(customer_id: str) -> str:
     """月額プランの解約・カードの変更ができる Stripe の画面の URL を返す"""
     try:

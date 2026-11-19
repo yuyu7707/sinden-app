@@ -14,7 +14,7 @@ from flask_login import current_user
 
 from sinden.decorators import pair_required
 from sinden.extensions import csrf, db
-from sinden.models import Purchase, PurchaseKind, User, now
+from sinden.models import ENDED_SUBSCRIPTION, Purchase, PurchaseKind, User, now
 from sinden.services import plans
 from sinden.services.payment import PaymentError, WebhookError
 
@@ -29,6 +29,29 @@ def apply_purchase(purchase: Purchase, session: dict) -> None:
     完了画面と Webhook が同時に来ても二重に反映しないよう、
     「まだ pending の申し込み」を paid に変えられたときだけ反映する。
     """
+    user = purchase.user
+    if (
+        purchase.kind in PurchaseKind.PLANS
+        and user.has_subscription
+        and user.stripe_subscription_id
+        and user.stripe_subscription_id != session.get("subscription")
+    ):
+        # 契約中に2つ目の月額が支払われた（別のタブで2回申し込んだなど）。
+        # 今の契約を上書きすると、1つ目が見えなくなり解約もできなくなるので、反映しない。
+        # 返金と2つ目の解約は、運営者が Stripe の画面で行う
+        marked = db.session.execute(
+            db.update(Purchase)
+            .where(Purchase.id == purchase.id, Purchase.status == "pending")
+            .values(status="duplicate", paid_at=now())
+        )
+        if marked.rowcount == 1:
+            current_app.logger.error(
+                "二重の月額契約：purchase=%s user=%s subscription=%s（返金と解約が必要）",
+                purchase.id,
+                user.id,
+                session.get("subscription"),
+            )
+        return
     result = db.session.execute(
         db.update(Purchase)
         .where(Purchase.id == purchase.id, Purchase.status == "pending")
@@ -36,7 +59,6 @@ def apply_purchase(purchase: Purchase, session: dict) -> None:
     )
     if result.rowcount != 1:
         return
-    user = purchase.user
     if session.get("customer"):
         user.stripe_customer_id = session["customer"]
     if purchase.kind == PurchaseKind.MIRRORS:
@@ -145,7 +167,7 @@ def complete():
         abort(404)
     if purchase.user_id != current_user.id:
         abort(403)
-    if purchase.status != "paid":
+    if purchase.status == "pending":
         try:
             session = current_app.extensions["payment"].retrieve_session(session_id)
         except PaymentError as e:
@@ -200,14 +222,22 @@ def webhook():
             apply_purchase(purchase, obj)
             db.session.commit()
     elif kind in ("customer.subscription.updated", "customer.subscription.deleted"):
+        # 本人の今の契約だけを扱う（前の契約の通知が遅れて届いても無視する）
         user = db.session.scalar(
-            db.select(User).filter_by(stripe_subscription_id=obj.get("id"))
+            db.select(User)
+            .filter_by(stripe_subscription_id=obj.get("id"))
+            .with_for_update()
         )
-        if user is not None:
-            user.subscription_status = (
-                "canceled"
-                if kind == "customer.subscription.deleted"
-                else obj.get("status")
-            )
+        if user is not None and user.subscription_status not in ENDED_SUBSCRIPTION:
+            # 通知は届く順が前後するので、中身は使わず Stripe から最新の状態を取り直す
+            try:
+                latest = current_app.extensions["payment"].retrieve_subscription(
+                    obj.get("id")
+                )
+            except PaymentError:
+                db.session.rollback()
+                # 500 を返すと、Stripe があとで送り直してくれる
+                return {"received": False}, 500
+            user.subscription_status = latest.get("status")
             db.session.commit()
     return {"received": True}

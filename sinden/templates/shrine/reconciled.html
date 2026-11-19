@@ -1,7 +1,7 @@
 {% extends "shrine/_layout.html" %}
 {% block panel %}
-<h2 class="verdict">判決：和解</h2>
-<p>ふたりで祠を後にします。今回の訴えを、記録として残しますか？</p>
+<h2 class="verdict">ふたりの選択：和解</h2>
+<p>ふたりとも「祠を出よう」を選びました。ふたりで祠を後にします。今回の訴えを、記録として残しますか？</p>
 <p><small>ふたりとも「残す」を選んだときだけ残ります。どちらかが「残さない」を選ぶと、今回の訴えはすべて消えます。</small></p>
 {% set mine = visit.flag('keep', current_user) %}
 {% if mine is none %}

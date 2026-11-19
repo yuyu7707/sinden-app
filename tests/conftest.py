@@ -7,7 +7,7 @@ from sinden import create_app
 from sinden.extensions import db
 from sinden.models import Pair, User, new_invite_code
 from sinden.services.ai import AIError, Reflection
-from sinden.services.payment import WebhookError
+from sinden.services.payment import PaymentError, WebhookError
 
 # 本物の外部サービス（Claude API、Stripe）は、テストでは呼ばない
 
@@ -33,6 +33,8 @@ class FakePayment:
     def __init__(self):
         self.created = []
         self.sessions = {}
+        self.subscriptions = {}
+        self.subscription_error = False
         self.event = None
 
     def create_checkout_session(self, purchase):
@@ -42,6 +44,11 @@ class FakePayment:
 
     def retrieve_session(self, session_id):
         return self.sessions[session_id]
+
+    def retrieve_subscription(self, subscription_id):
+        if self.subscription_error:
+            raise PaymentError("bad")
+        return self.subscriptions[subscription_id]
 
     def create_portal_url(self, customer_id):
         return f"https://billing.stripe.test/{customer_id}"

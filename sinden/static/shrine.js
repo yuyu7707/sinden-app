@@ -6,8 +6,9 @@
   const stateUrl = shrine.dataset.stateUrl;
   const version = shrine.dataset.version;
   const visitId = shrine.querySelector(".stage")?.dataset.visit;
-  // 下書きは「番ごと」に分ける。どのボタンで届けても、次の番に前の文章が残らない
-  const draftKey = `sinden-draft-${visitId}-${shrine.dataset.turn}`;
+  // 下書きは「利用者・祠・番ごと」に分ける。次の番に前の文章が残らず、
+  // 同じブラウザで別の人がログインしても、前の人の文章は出ない
+  const draftKey = `sinden-draft-${shrine.dataset.user}-${visitId}-${shrine.dataset.turn}`;
 
   const safeGet = (key) => { try { return sessionStorage.getItem(key); } catch { return null; } };
   const safeSet = (key, value) => { try { sessionStorage.setItem(key, value); } catch { /* 使えなくても動く */ } };
@@ -72,6 +73,11 @@
   const poll = async () => {
     try {
       const res = await fetch(stateUrl, { headers: { Accept: "application/json" } });
+      if (res.status === 404 || res.redirected) {
+        // 祠が消えた・ペアでなくなった（相手の退会など）。ホームへ戻る
+        location.href = shrine.dataset.homeUrl;
+        return;
+      }
       if (!res.ok) return;
       const data = await res.json();
       if (data.version !== version && !submitted) {
