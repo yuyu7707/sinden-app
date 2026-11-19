@@ -1,5 +1,7 @@
 import pytest
 from flask import g
+from flask.sessions import SecureCookieSessionInterface
+from itsdangerous import BadSignature
 
 from sinden import create_app
 from sinden.extensions import db
@@ -50,6 +52,27 @@ class FakePayment:
         return self.event
 
 
+class NoClockCheckSessionInterface(SecureCookieSessionInterface):
+    """テスト用：ログインの Cookie の「作った時刻」を確かめない（署名の確認は残す）
+
+    WSL2 では時計が数秒逆戻りすることがあり、直前に作った Cookie が
+    「未来の時刻の Cookie」として捨てられ、ときどきログアウト扱いになってテストが落ちる。
+    本番と CI（WSL2 ではない）では起きないので、アプリ本体は変えない。
+    """
+
+    def open_session(self, app, request):
+        serializer = self.get_signing_serializer(app)
+        if serializer is None:
+            return None
+        value = request.cookies.get(self.get_cookie_name(app))
+        if not value:
+            return self.session_class()
+        try:
+            return self.session_class(serializer.loads(value))
+        except BadSignature:
+            return self.session_class()
+
+
 @pytest.fixture
 def fake_ai():
     return FakeAI()
@@ -77,6 +100,8 @@ def app(fake_ai, fake_payment):
     @app.before_request
     def reset_login_cache():
         g.pop("_login_user", None)
+
+    app.session_interface = NoClockCheckSessionInterface()
 
     with app.app_context():
         db.create_all()
