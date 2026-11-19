@@ -1,7 +1,8 @@
 import logging
 import os
 
-from flask import Flask, render_template
+from flask import Flask, render_template, request
+from flask_login import current_user
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from sinden.extensions import csrf, db, limiter, login_manager, migrate
@@ -131,6 +132,10 @@ def create_app(config=None):
         response.headers.setdefault(
             "Referrer-Policy", "strict-origin-when-cross-origin"
         )
+        # ログイン中の画面（訴え・鏡・手紙）をブラウザに残さない。
+        # スマホを共有していても、ログアウト後に「戻る」で見られないように
+        if current_user.is_authenticated and request.endpoint != "static":
+            response.headers["Cache-Control"] = "no-store"
         return response
 
     @app.errorhandler(403)

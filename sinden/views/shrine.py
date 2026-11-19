@@ -14,6 +14,7 @@ from flask import (
     url_for,
 )
 from flask_login import current_user
+from sqlalchemy.orm.attributes import flag_modified
 
 from sinden.decorators import pair_required
 from sinden.extensions import db
@@ -64,21 +65,40 @@ def pass_turn(visit: Visit) -> None:
     clear_draft(visit)
 
 
+DRAFT_FIELDS = (
+    "draft_text",
+    "draft_mirror",
+    "draft_lamp",
+    "draft_note",
+    "draft_danger",
+)
+
+
 def clear_draft(visit: Visit) -> None:
     visit.draft_text = None
     visit.draft_mirror = None
     visit.draft_lamp = None
     visit.draft_note = None
     visit.draft_danger = False
+    # 読んだときに空でも、そのあと別の処理（鏡づくり）が書いたかもしれないので、必ず書き込む
+    for name in DRAFT_FIELDS:
+        flag_modified(visit, name)
 
 
 def expire_turn_if_away(visit: Visit) -> None:
     """話し手が持ち時間を大きく過ぎても訴えないときは、番を相手に渡す"""
-    if visit.status != VisitStatus.PLEADING or visit.turn_started_at is None:
-        return
-    limit = current_app.config["TURN_SECONDS"] + AWAY_GRACE_SECONDS
-    if now() - visit.turn_started_at > timedelta(seconds=limit):
-        pass_turn(visit)
+
+    def expired() -> bool:
+        if visit.status != VisitStatus.PLEADING or visit.turn_started_at is None:
+            return False
+        limit = current_app.config["TURN_SECONDS"] + AWAY_GRACE_SECONDS
+        return now() - visit.turn_started_at > timedelta(seconds=limit)
+
+    if expired():
+        # ふたりの画面が同時に確かめても、番が2回替わらないよう、ロックして読み直す
+        db.session.refresh(visit, with_for_update=True)
+        if expired():
+            pass_turn(visit)
 
 
 def is_present(user) -> bool:
@@ -240,31 +260,53 @@ def reflect(visit_id):
         flash("訴えを書くか、声で話してから確かめてください")
         return back(visit)
     # 1回の番で映せるのは1回まで（AI の回数を守るため）。
-    # 二重に押されても AI を2回呼ばないよう、「下書きがまだない」ときだけ下書きを置けた方が進む
+    # 二重に押されても AI を2回呼ばないよう、「自分の番で、下書きがまだない」ときだけ下書きを置けた方が進む
+    turn_started_at = visit.turn_started_at
+    this_turn = (
+        Visit.id == visit.id,
+        Visit.status == VisitStatus.PLEADING,
+        Visit.current_speaker_id == current_user.id,
+        Visit.turn_started_at == turn_started_at,
+    )
     claimed = db.session.execute(
         db.update(Visit)
-        .where(Visit.id == visit.id, Visit.draft_text.is_(None))
+        .where(*this_turn, Visit.draft_text.is_(None))
         .values(draft_text=body)
+        .execution_options(synchronize_session=False)
     )
     if claimed.rowcount != 1:
         db.session.rollback()
         return back(visit)
     db.session.commit()
 
-    visit.draft_mirror = None
-    visit.draft_lamp = None
-    visit.draft_danger = has_danger_words(body)
-    visit.draft_note = plans.mirror_block_reason(visit, current_user)
-    if visit.draft_note is None:
+    # AI を待つあいだ（最長1分ほど）は、行をロックしない
+    draft = {
+        "draft_mirror": None,
+        "draft_lamp": None,
+        "draft_danger": has_danger_words(body),
+        "draft_note": plans.mirror_block_reason(visit, current_user),
+    }
+    if draft["draft_note"] is None:
         try:
             result = current_app.extensions["ai"].reflect(body)
-            visit.draft_mirror = result.mirror
-            visit.draft_danger = visit.draft_danger or result.danger
+            draft["draft_mirror"] = result.mirror
+            draft["draft_danger"] = draft["draft_danger"] or result.danger
             # 危険の気配があるときは、ことばの灯を出さない
-            visit.draft_lamp = None if visit.draft_danger else (result.lamp or None)
+            draft["draft_lamp"] = (
+                None if draft["draft_danger"] else (result.lamp or None)
+            )
+            # AI を呼んだので、結果を使えなくても回数は数える
             plans.record_mirror_use(visit, current_user)
         except AIError as e:
-            visit.draft_note = str(e)
+            draft["draft_note"] = str(e)
+    # 待つあいだに番が替わっていたら（「このまま届ける」や持ち時間切れ）、結果は捨てる。
+    # 条件なしで書くと、話し手の鏡・灯・危険の判定が、相手の番の下書きに入ってしまう
+    db.session.execute(
+        db.update(Visit)
+        .where(*this_turn, Visit.draft_text == body)
+        .values(**draft)
+        .execution_options(synchronize_session=False)
+    )
     db.session.commit()
     return back(visit)
 
@@ -273,17 +315,21 @@ def reflect(visit_id):
 @pair_required
 def plea(visit_id):
     """相手に届ける。source=lamp なら、ことばの灯の言い方を届ける"""
-    visit = get_visit(visit_id)
+    # 行をロックして最新を読む。二度押しの2回目は、番が替わったあとに読むので届かない
+    visit = get_locked_visit(visit_id)
     body, error = speaker_body_or_none(visit)
     if error:
+        db.session.rollback()
         return error
 
-    use_lamp = request.form.get("source") == "lamp" and visit.draft_lamp
+    # 鏡・灯は、この番の下書きがあるときだけ使う
+    has_draft = visit.draft_text is not None
+    use_lamp = has_draft and request.form.get("source") == "lamp" and visit.draft_lamp
     if use_lamp:
         # 灯の文章はフォームから受け取らず、サーバーに保存した案を使う
         body = visit.draft_lamp
         source = "lamp"
-    elif visit.draft_text is not None:
+    elif has_draft:
         source = "own" if body == visit.draft_text else "edited"
     else:
         source = "own"
@@ -295,9 +341,9 @@ def plea(visit_id):
                 user=current_user,
                 seq=len(visit.pleas) + 1,
                 body=body,
-                mirror=visit.draft_mirror,
-                mirror_note=visit.draft_note,
-                danger=visit.draft_danger or has_danger_words(body),
+                mirror=visit.draft_mirror if has_draft else None,
+                mirror_note=visit.draft_note if has_draft else None,
+                danger=(has_draft and visit.draft_danger) or has_danger_words(body),
                 source=source,
             )
         )

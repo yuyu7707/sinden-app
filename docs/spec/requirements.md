@@ -186,6 +186,11 @@ AI の機能は「女神の鏡」と「ことばの灯」。**1回の訴えに�
 | ログイン後に外部サイトへ飛ばされる | `next` は自サイトのパスだけ（`\`・制御文字・scheme・ホスト名があれば使わない） | `views/auth.py` |
 | 3人目がペアに入る | ペアの行と人数をロックして数える | `views/home.py` |
 | ふたりが同時に押す（終える・残す） | 祠の行をロックして読み直す | `views/shrine.py` |
+| 鏡・灯・危険の判定が相手の番に移る | 鏡を待つあいだは行をロックせず、結果は「同じ人の同じ番（`turn_started_at`）で、下書きが同じ」ときだけ書く。届けるときは、この番の下書きがあるときだけ鏡を使う。番を渡すときは下書きを必ず消す | `views/shrine.py` |
+| 「届ける」の二度押し・持ち時間切れの同時の確認 | 祠の行をロックしてから番を替える | `views/shrine.py` |
+| スマホを共有していて、ログアウト後に「戻る」で見られる | ログイン中の画面に `Cache-Control: no-store` | `__init__.py` |
+| 退会で古い招待コードから戻る・パスワードの総当たり | 退会したらペアの招待コードを作り直す。退会は 5回/分・20回/時まで。Stripe に契約が残っていれば退会できない | `views/auth.py` |
+| デプロイの Action の乗っ取り・つなぎ先のなりすまし | Action はコミット SHA で固定。SSH はホスト鍵の指紋を確かめる | `.github/workflows/` |
 | Stripe の通知の偽装 | 署名を確かめる。`STRIPE_WEBHOOK_SECRET` が空なら受け付けない。`STRIPE_SECRET_KEY` があるのに空なら起動しない | `services/payment.py`、`__init__.py` |
 | 支払いの二重の反映 | `pending` の申し込みを `paid` に変えられたときだけ反映。鏡の追加分の増減は DB の中で計算する | `views/billing.py`、`services/plans.py` |
 | 他のサイトからの操作・埋め込み | CSRF トークン、Cookie は `SameSite=Lax`・本番は `Secure`。`X-Frame-Options: DENY`、`nosniff`、`Referrer-Policy` | `__init__.py` |

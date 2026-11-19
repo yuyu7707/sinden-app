@@ -131,3 +131,73 @@ def test_login_unknown_email_still_checks_password(app, monkeypatch):
     )
     assert res.status_code == 422
     assert calls == [auth.DUMMY_HASH]
+
+
+# ---- 再監査（11/19 午後）の指摘 ----
+
+
+def test_mirror_does_not_move_to_partner_turn(aoi, hikaru, login_as, fake_ai):
+    """鏡を待つあいだに番が替わったら、鏡・灯・危険の判定は相手の番に入らない"""
+    from sinden.models import Plea, now
+
+    visit, a, h = open_shrine(aoi, hikaru, login_as)
+    real_reflect = fake_ai.reflect
+
+    def slow_reflect(text):
+        # AI を待つあいだに、持ち時間切れなどで番があおいに移ったことを再現する
+        db.session.execute(
+            db.update(Visit)
+            .where(Visit.id == visit.id)
+            .values(
+                current_speaker_id=aoi.id,
+                turn_started_at=now(),
+                draft_text=None,
+            )
+        )
+        db.session.commit()
+        fake_ai.danger = True
+        return real_reflect(text)
+
+    fake_ai.reflect = slow_reflect
+    h.post(f"/shrine/{visit.id}/reflect", data={"body": "ひかるの訴え"})
+    db.session.refresh(visit)
+    assert visit.current_speaker_id == aoi.id
+    assert visit.draft_mirror is None
+    assert visit.draft_lamp is None
+    assert not visit.draft_danger
+
+    a.post(f"/shrine/{visit.id}/plea", data={"body": "あおいの訴え"})
+    plea = db.session.scalar(db.select(Plea).filter_by(user_id=aoi.id))
+    assert plea.mirror is None
+    assert not plea.danger
+
+
+def test_plea_ignores_leftover_draft(aoi, hikaru, login_as):
+    """下書きのない番に鏡が残っていても、訴えには付けない"""
+    from sinden.models import Plea
+
+    visit, _a, h = open_shrine(aoi, hikaru, login_as)
+    visit.draft_mirror = "前の人の鏡"
+    visit.draft_lamp = "前の人の灯"
+    visit.draft_danger = True
+    db.session.commit()
+    h.post(f"/shrine/{visit.id}/plea", data={"body": "わたしの言葉", "source": "lamp"})
+    plea = db.session.scalar(db.select(Plea))
+    assert plea.body == "わたしの言葉"
+    assert plea.source == "own"
+    assert plea.mirror is None
+    assert not plea.danger
+
+
+def test_plea_twice_delivers_once(aoi, hikaru, login_as):
+    from sinden.models import Plea
+
+    visit, _a, h = open_shrine(aoi, hikaru, login_as)
+    h.post(f"/shrine/{visit.id}/plea", data={"body": "一度だけ"})
+    h.post(f"/shrine/{visit.id}/plea", data={"body": "一度だけ"})
+    assert db.session.scalar(db.select(db.func.count(Plea.id))) == 1
+
+
+def test_logged_in_pages_are_not_cached(aoi, hikaru, login_as, app):
+    assert login_as(aoi).get("/").headers["Cache-Control"] == "no-store"
+    assert "no-store" not in app.test_client().get("/").headers.get("Cache-Control", "")

@@ -11,7 +11,7 @@
 | アプリ | gunicorn（`127.0.0.1:8001`、worker 2） | `127.0.0.1:8000` |
 | サービス | systemd `sinden-app.service` | `marche-app.service` |
 | データベース | MySQL 8.0 の `sinden`（ユーザー `sinden`、utf8mb4） | `marche` |
-| Web サーバー | nginx `sites-available/sinden-app`（`/static/` は nginx が直接返す） | `sites-available/marche-app` |
+| Web サーバー | nginx `sites-available/sinden-app`（`/static/` は nginx が直接返し、`nosniff` を付ける。画面のセキュリティヘッダーはアプリが付けるので、nginx の server 全体には `add_header` を書かない） | `sites-available/marche-app` |
 | https | Let's Encrypt（certbot。自動更新） | なし |
 
 - ドメインは [sslip.io](https://sslip.io)（IP アドレスをそのまま名前にする無料のサービス）。https は音声入力（ブラウザの音声認識）に必要
