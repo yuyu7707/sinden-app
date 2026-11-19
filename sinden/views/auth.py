@@ -1,7 +1,7 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 
-from sinden.extensions import db, login_manager
+from sinden.extensions import db, limiter, login_manager
 from sinden.forms import LoginForm, RegisterForm
 from sinden.models import User
 
@@ -21,6 +21,8 @@ def safe_next(target: str | None) -> str | None:
 
 
 @bp.route("/register", methods=["GET", "POST"])
+# アカウントの大量作成を防ぐ（発表会場など、同じ回線から何人か登録しても足りる数）
+@limiter.limit("10 per hour", methods=["POST"])
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
@@ -40,6 +42,8 @@ def register():
 
 
 @bp.route("/login", methods=["GET", "POST"])
+# パスワードの総当たりを防ぐ
+@limiter.limit("5 per minute;30 per hour", methods=["POST"])
 def login():
     form = LoginForm()
     if form.validate_on_submit():

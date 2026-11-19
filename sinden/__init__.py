@@ -4,7 +4,7 @@ import os
 from flask import Flask, render_template
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from sinden.extensions import csrf, db, login_manager, migrate
+from sinden.extensions import csrf, db, limiter, login_manager, migrate
 from sinden.services import ai, payment
 
 WEEKDAYS = "月火水木金土日"
@@ -64,6 +64,7 @@ def create_app(config=None):
     db.init_app(app)
     migrate.init_app(app, db)
     csrf.init_app(app)
+    limiter.init_app(app)
     login_manager.init_app(app)
     login_manager.login_view = "auth.login"
     login_manager.login_message = "ログインしてください"
@@ -118,6 +119,10 @@ def create_app(config=None):
     @app.errorhandler(404)
     def not_found(error):
         return render_template("errors/404.html"), 404
+
+    @app.errorhandler(429)
+    def too_many_requests(error):
+        return render_template("errors/429.html"), 429
 
     logging.basicConfig(level=logging.INFO)
     return app
