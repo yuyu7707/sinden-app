@@ -6,7 +6,9 @@
 <div class="shrine"
      data-state-url="{{ url_for('shrine.state', visit_id=visit.id) }}"
      data-version="{{ visit.version() }}"
-     data-turn="{{ visit.pleas|length }}">
+     data-turn="{{ visit.pleas|length }}"
+     data-user="{{ current_user.id }}"
+     data-home-url="{{ url_for('home.index') }}">
   {{ stage(visit, partner, partner_present, intro=intro) }}
   <section class="panel">
     {% block panel %}{% endblock %}

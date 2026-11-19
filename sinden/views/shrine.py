@@ -386,3 +386,27 @@ def keep(visit_id):
             visit.pleas.clear()
     db.session.commit()
     return back(visit)
+
+
+@bp.route("/<int:visit_id>/stop", methods=["POST"])
+@pair_required
+def stop(visit_id):
+    """祠を中断する。ひとりで終えられる（相手の同意はいらない）。訴えは残さない
+
+    危険を感じたときに、相手に理由を伝えずに祠を終えられるようにするため。
+    相手には「祠を後にしました。今回の訴えは残していません」とだけ出る（show の closed）。
+    """
+    visit = get_locked_visit(visit_id)
+    if visit.status not in (VisitStatus.RULES, VisitStatus.PLEADING):
+        db.session.rollback()
+        return back(visit)
+    visit.status = VisitStatus.CLOSED
+    visit.kept = False
+    visit.ended_at = now()
+    visit.current_speaker_id = None
+    visit.turn_started_at = None
+    clear_draft(visit)
+    visit.pleas.clear()
+    db.session.commit()
+    flash("祠を中断しました。今回の訴えは残していません")
+    return redirect(url_for("home.index"))

@@ -115,6 +115,7 @@ def test_webhook_subscription_flow(aoi, hikaru, login_as, app, fake_payment):
     assert hikaru.is_premium
     assert aoi.stripe_subscription_id == "sub_1"
 
+    fake_payment.subscriptions["sub_1"] = {"id": "sub_1", "status": "canceled"}
     fake_payment.event = {
         "type": "customer.subscription.deleted",
         "data": {"object": {"id": "sub_1", "status": "canceled"}},
@@ -282,3 +283,122 @@ def test_app_refuses_stripe_without_webhook_secret():
                 "STRIPE_WEBHOOK_SECRET": "",
             }
         )
+
+
+# ---- 契約の状態（設計書レビュー 11/19）----
+
+
+def subscribe(client, user, fake_payment, sub="sub_1"):
+    """月額（個人）に入った状態にする"""
+    client.post("/billing/checkout/solo")
+    purchase = db.session.scalars(
+        db.select(Purchase).filter_by(user_id=user.id).order_by(Purchase.id.desc())
+    ).first()
+    fake_payment.sessions[purchase.session_id] = paid_session(
+        customer="cus_1", subscription=sub
+    )
+    client.get(f"/billing/complete?session_id={purchase.session_id}")
+    db.session.refresh(user)
+
+
+def _send(app, kind, sub_id, status_in_event):
+    """契約の通知を送る（中身の status は、わざと最新と違う値にできる）"""
+    payment = app.extensions["payment"]
+    payment.event = {
+        "type": kind,
+        "data": {"object": {"id": sub_id, "status": status_in_event}},
+    }
+    return app.test_client().post(
+        "/webhooks/stripe", headers={"Stripe-Signature": "ok"}
+    )
+
+
+def test_subscription_status_is_fetched_from_stripe(
+    aoi, hikaru, login_as, app, fake_payment
+):
+    """イベントの中身（active）ではなく、Stripe から取り直した状態（past_due）を使う"""
+    subscribe(login_as(aoi), aoi, fake_payment)
+    fake_payment.subscriptions["sub_1"] = {"id": "sub_1", "status": "past_due"}
+    _send(app, "customer.subscription.updated", "sub_1", "active")
+    db.session.refresh(aoi)
+    assert aoi.subscription_status == "past_due"
+    assert not aoi.is_premium  # 支払い失敗の間は機能を止める
+    assert aoi.has_subscription  # 契約は残るので、新しく申し込めない
+
+
+def test_old_event_after_cancel_does_not_revive(
+    aoi, hikaru, login_as, app, fake_payment
+):
+    """解約のあとに、古い「active」の通知が遅れて届いても、プランは戻らない"""
+    subscribe(login_as(aoi), aoi, fake_payment)
+    fake_payment.subscriptions["sub_1"] = {"id": "sub_1", "status": "canceled"}
+    _send(app, "customer.subscription.deleted", "sub_1", "canceled")
+    fake_payment.subscriptions["sub_1"] = {"id": "sub_1", "status": "active"}
+    _send(app, "customer.subscription.updated", "sub_1", "active")
+    db.session.refresh(aoi)
+    assert aoi.subscription_status == "canceled"
+    assert not aoi.is_premium
+
+
+def test_same_event_twice_is_harmless(aoi, hikaru, login_as, app, fake_payment):
+    subscribe(login_as(aoi), aoi, fake_payment)
+    fake_payment.subscriptions["sub_1"] = {"id": "sub_1", "status": "active"}
+    for _ in range(2):
+        assert (
+            _send(app, "customer.subscription.updated", "sub_1", "active").status_code
+            == 200
+        )
+    db.session.refresh(aoi)
+    assert aoi.subscription_status == "active"
+
+
+def test_fetch_failure_returns_500_for_retry(aoi, hikaru, login_as, app, fake_payment):
+    subscribe(login_as(aoi), aoi, fake_payment)
+    fake_payment.subscription_error = True
+    res = _send(app, "customer.subscription.deleted", "sub_1", "canceled")
+    assert res.status_code == 500
+    db.session.refresh(aoi)
+    assert aoi.subscription_status == "active"
+
+
+def test_event_for_other_subscription_is_ignored(
+    aoi, hikaru, login_as, app, fake_payment
+):
+    subscribe(login_as(aoi), aoi, fake_payment)
+    res = _send(app, "customer.subscription.deleted", "sub_old", "canceled")
+    assert res.status_code == 200
+    db.session.refresh(aoi)
+    assert aoi.subscription_status == "active"
+
+
+def test_second_plan_payment_is_marked_duplicate(aoi, hikaru, login_as, fake_payment):
+    """2つのタブで申し込み、両方払った。2つ目は上書きせず duplicate にする"""
+    a = login_as(aoi)
+    a.post("/billing/checkout/solo")
+    a.post("/billing/checkout/solo")
+    first, second = db.session.scalars(db.select(Purchase).order_by(Purchase.id)).all()
+    fake_payment.sessions[first.session_id] = paid_session(
+        customer="cus_1", subscription="sub_1"
+    )
+    fake_payment.sessions[second.session_id] = paid_session(
+        customer="cus_2", subscription="sub_2"
+    )
+    a.get(f"/billing/complete?session_id={first.session_id}")
+    page = a.get(f"/billing/complete?session_id={second.session_id}").get_data(
+        as_text=True
+    )
+    db.session.refresh(aoi)
+    db.session.refresh(second)
+    assert aoi.stripe_subscription_id == "sub_1"
+    assert aoi.stripe_customer_id == "cus_1"
+    assert second.status == "duplicate"
+    assert "すでにプランに入っています" in page
+
+
+def test_unpaid_subscription_blocks_new_checkout(aoi, hikaru, login_as, fake_payment):
+    aoi.plan = "solo"
+    aoi.stripe_subscription_id = "sub_1"
+    aoi.subscription_status = "unpaid"
+    db.session.commit()
+    login_as(aoi).post("/billing/checkout/pair")
+    assert fake_payment.created == []

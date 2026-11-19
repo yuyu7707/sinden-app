@@ -30,7 +30,7 @@
           <li><a href="{{ url_for('learn.index') }}">学び</a></li>
           <li><a href="{{ url_for('billing.index') }}">プラン</a></li>
           <li>
-            <form method="post" action="{{ url_for('auth.logout') }}" style="margin:0">
+            <form method="post" action="{{ url_for('auth.logout') }}" style="margin:0" data-logout>
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button type="submit" class="secondary outline small">ログアウト</button>
             </form>
@@ -61,6 +61,14 @@
       {% if current_user.is_authenticated %} ・ <a href="{{ url_for('auth.withdraw') }}">退会</a>{% endif %}
     </small>
   </footer>
+  <script>
+    // ログアウトしたら、このブラウザに一時保存した入力中の訴えを消す（スマホを共有していても残らない）
+    document.querySelectorAll("form[data-logout]").forEach((f) => f.addEventListener("submit", () => {
+      try {
+        Object.keys(sessionStorage).filter((k) => k.startsWith("sinden-draft-")).forEach((k) => sessionStorage.removeItem(k));
+      } catch { /* 使えなくてもログアウトはできる */ }
+    }));
+  </script>
   {% block scripts %}{% endblock %}
 </body>
 </html>
