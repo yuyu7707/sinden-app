@@ -24,16 +24,31 @@ PAID_STATUSES = ("paid", "no_payment_required")
 
 
 def apply_purchase(purchase: Purchase, session: dict) -> None:
-    """支払いが確定した申し込みを、支払った本人のプランに反映する（何度呼んでも同じ結果）"""
-    if purchase.status == "paid":
+    """支払いが確定した申し込みを、支払った本人のプランに反映する（何度呼んでも同じ結果）
+
+    完了画面と Webhook が同時に来ても二重に反映しないよう、
+    「まだ pending の申し込み」を paid に変えられたときだけ反映する。
+    """
+    result = db.session.execute(
+        db.update(Purchase)
+        .where(Purchase.id == purchase.id, Purchase.status == "pending")
+        .values(status="paid", paid_at=now())
+    )
+    if result.rowcount != 1:
         return
     user = purchase.user
-    purchase.status = "paid"
-    purchase.paid_at = now()
     if session.get("customer"):
         user.stripe_customer_id = session["customer"]
     if purchase.kind == PurchaseKind.MIRRORS:
-        user.extra_mirrors += current_app.config["MIRROR_PACK_SIZE"]
+        # 加算は DB の中で計算する（読んだ値に足して書き戻すと、同時の更新が消える）
+        db.session.execute(
+            db.update(User)
+            .where(User.id == user.id)
+            .values(
+                extra_mirrors=User.extra_mirrors
+                + current_app.config["MIRROR_PACK_SIZE"]
+            )
+        )
         return
     user.plan = purchase.kind
     user.stripe_subscription_id = session.get("subscription")

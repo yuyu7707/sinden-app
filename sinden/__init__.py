@@ -55,6 +55,11 @@ def create_app(config=None):
         raise RuntimeError(
             "SECRET_KEY を .env（本番は EnvironmentFile）に設定してください"
         )
+    # Stripe を使うのに Webhook の秘密鍵が空だと、署名の確認が意味をなさない
+    if app.config["STRIPE_SECRET_KEY"] and not app.config["STRIPE_WEBHOOK_SECRET"]:
+        raise RuntimeError(
+            "STRIPE_SECRET_KEY を使うときは STRIPE_WEBHOOK_SECRET も設定してください"
+        )
 
     db.init_app(app)
     migrate.init_app(app, db)

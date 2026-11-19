@@ -97,10 +97,12 @@ def create_portal_url(customer_id: str) -> str:
 
 def parse_webhook(payload: bytes, signature: str | None) -> dict:
     """署名を確かめてから、イベントを dict で返す"""
+    secret = current_app.config["STRIPE_WEBHOOK_SECRET"]
+    if not secret:
+        # 空の鍵では、誰でも正しい署名を作れてしまう
+        raise WebhookError("Webhook の秘密鍵が設定されていません")
     try:
-        stripe.Webhook.construct_event(
-            payload, signature, current_app.config["STRIPE_WEBHOOK_SECRET"]
-        )
+        stripe.Webhook.construct_event(payload, signature, secret)
     except (ValueError, stripe.SignatureVerificationError) as e:
         raise WebhookError("署名が正しくありません") from e
     return json.loads(payload)
