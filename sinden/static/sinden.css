@@ -1037,11 +1037,11 @@ body.learn {
   .lp-scene.with-photo { animation: none; }
 }
 
-/* ===== トップページ：神殿が浮かぶ動きを、全体に約1.5倍ゆっくりにする =====
+/* ===== トップページ：神殿が浮かぶ動きを、全体に約1.2倍ゆっくりにする =====
    神殿だけ遅くすると女神や文字が先に出てしまうので、順番はそのままで、どれも遅らせる。
    由来ページ（body.about）は別の速さなので変えない */
-body.landing:not(.about) .lp-scene.with-photo { animation-duration: 10s; }
-body.landing:not(.about) .lp-scene.with-photo .lp-goddess { animation-duration: 11s; }
-body.landing:not(.about) .lp-lights { animation-duration: 11.5s; }
-body.landing:not(.about) .lp-copy { animation-delay: 5.2s; animation-duration: 2s; }
-body.landing:not(.about) .lp-scroll { animation-delay: 7.6s; }
+body.landing:not(.about) .lp-scene.with-photo { animation-duration: 7.8s; }
+body.landing:not(.about) .lp-scene.with-photo .lp-goddess { animation-duration: 8.4s; }
+body.landing:not(.about) .lp-lights { animation-duration: 9s; }
+body.landing:not(.about) .lp-copy { animation-delay: 4.1s; animation-duration: 1.9s; }
+body.landing:not(.about) .lp-scroll { animation-delay: 6s; }
