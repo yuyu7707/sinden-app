@@ -1036,3 +1036,12 @@ body.learn {
 @media (prefers-reduced-motion: reduce) {
   .lp-scene.with-photo { animation: none; }
 }
+
+/* ===== トップページ：神殿が浮かぶ動きを、全体に約1.5倍ゆっくりにする =====
+   神殿だけ遅くすると女神や文字が先に出てしまうので、順番はそのままで、どれも遅らせる。
+   由来ページ（body.about）は別の速さなので変えない */
+body.landing:not(.about) .lp-scene.with-photo { animation-duration: 10s; }
+body.landing:not(.about) .lp-scene.with-photo .lp-goddess { animation-duration: 11s; }
+body.landing:not(.about) .lp-lights { animation-duration: 11.5s; }
+body.landing:not(.about) .lp-copy { animation-delay: 5.2s; animation-duration: 2s; }
+body.landing:not(.about) .lp-scroll { animation-delay: 7.6s; }
