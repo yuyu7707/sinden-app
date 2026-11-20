@@ -184,8 +184,23 @@ body.in-shrine.theme-morning { background: #fbf6ea; }
   100% { opacity: 1; transform: translate(-50%, 0); filter: blur(0) drop-shadow(0 0 18px rgba(255, 170, 80, 0.35)) brightness(0.9); }
 }
 .theme-night .stage.intro .lights { animation: lights 9s ease both; }
+/* 暗闇の幕：はじめは真っ暗で、ゆっくり消えて、神殿が浮かび上がる。
+   写真の明るさを変えるだけだと、最初から見えているように感じたので、幕で確実に暗くする */
+.theme-night .stage.intro::after {
+  content: "";
+  position: absolute; inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: #0d0f1a;
+  animation: curtain-lift 7s ease-in-out both;
+}
+@keyframes curtain-lift {
+  0%, 12% { opacity: 1; }
+  100% { opacity: 0; }
+}
 @media (prefers-reduced-motion: reduce) {
   .theme-night .stage.intro .scene.has-photo, .theme-night .stage.intro .goddess, .theme-night .stage.intro .lights { animation: none; }
+  .theme-night .stage.intro::after { display: none; }
 }
 
 .panel h2 { margin-bottom: 0.5rem; }
