@@ -49,12 +49,27 @@
       <textarea name="body" id="plea-body" rows="7" maxlength="{{ max_chars }}"
                 placeholder="女神に向かって、言いたいことを。相手は黙って聴いています。"></textarea>
       <p class="row"><small><span id="count">0</span> / {{ max_chars }}文字</small></p>
+      <div class="two-tools">
+        <p><small>届ける前に、次の2つで確かめられます。<strong>あなたにだけ</strong>見えて、相手には見えません。</small></p>
+        <div class="tools-grid">
+          <section class="tool tool-mirror">
+            <h3>女神の鏡</h3>
+            <p class="tool-what">あなたの言葉を、肯定も否定もせずに、映し返します。</p>
+            <p class="tool-hint">自分の言葉が、どう聞こえるかに気づけます。</p>
+          </section>
+          <section class="tool tool-lamp">
+            <h3><span class="lamp-flame" aria-hidden="true"></span>ことばの灯</h3>
+            <p class="tool-what">同じ気持ちを、相手に届きやすい言い方にした案です。</p>
+            <p class="tool-hint">使うかどうかは、あなたが決めます。</p>
+          </section>
+        </div>
+      </div>
       <div class="plea-actions">
         {% if reflect_block %}
           <p class="voice-note"><small>{{ reflect_block }}</small></p>
         {% else %}
           <button type="submit" formaction="{{ url_for('shrine.reflect', visit_id=visit.id) }}" data-no-clear>
-            届ける前に、鏡と「ことばの灯」で確かめる
+            届ける前に「女神の鏡」と、「ことばの灯」で確かめる
           </button>
         {% endif %}
         <button type="submit" class="secondary outline">このまま届ける</button>
@@ -64,20 +79,6 @@
         {% for key, phrase in reactions.items() %}
           <button type="submit" class="secondary outline small" formaction="{{ url_for('shrine.react', visit_id=visit.id) }}" name="key" value="{{ key }}" formnovalidate>{{ phrase }}</button>
         {% endfor %}
-      </div>
-      <div class="two-tools">
-        <p><small>「確かめる」を押すと、相手に届ける前に、<strong>あなたにだけ</strong>次の2つが出ます。</small></p>
-        <div class="tools-grid">
-          <section class="tool tool-mirror">
-            <h3>女神の鏡</h3>
-            <p>あなたの言葉が、どう聞こえるか</p>
-          </section>
-          <section class="tool tool-lamp">
-            <h3><span class="lamp-flame" aria-hidden="true"></span>ことばの灯</h3>
-            <p>思いやりのある言い方の案</p>
-          </section>
-        </div>
-        <p><small>どちらも相手には見えません。届けるかどうか、どの言葉で届けるかは、そのあとあなたが決めます。</small></p>
       </div>
     </form>
 

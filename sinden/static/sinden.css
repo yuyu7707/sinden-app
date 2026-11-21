@@ -1133,3 +1133,5 @@ body.landing:not(.about) .lp-scroll { animation-delay: 6s; }
 /* 長い言葉や URL で、横にはみ出さない */
 main, .pleas p, .mirror-text, .lamp-text { overflow-wrap: anywhere; }
 img, svg, video { max-width: 100%; height: auto; }
+.tool .tool-what { font-size: 0.95rem; line-height: 1.6; }
+.tool .tool-hint { margin-top: 0.3rem; font-size: 0.85rem; opacity: 0.85; }
