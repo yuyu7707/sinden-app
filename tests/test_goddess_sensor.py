@@ -163,3 +163,12 @@ def test_mirror_card_is_shown_after_reflect(aoi, hikaru, login_as, fake_ai):
     speaker.post(f"/shrine/{visit.id}/reflect", data={"body": "遅くて不安だった"})
     html = speaker.get(f"/shrine/{visit.id}").get_data(as_text=True)
     assert "mirror-card" in html and "mirror-text" in html
+
+
+def test_lamp_text_opens_like_a_book_and_keeps_text(aoi, hikaru, login_as, fake_ai):
+    visit, a, h = open_shrine(aoi, hikaru, login_as)
+    speaker, _ = speaker_and_listener(visit, aoi, a, h)
+    speaker.post(f"/shrine/{visit.id}/reflect", data={"body": "遅くて不安だった"})
+    html = speaker.get(f"/shrine/{visit.id}").get_data(as_text=True)
+    assert "lamp-book" in html and "lamp-cover-left" in html and "lamp-line" in html
+    assert "灯：遅くて不安だった" in html

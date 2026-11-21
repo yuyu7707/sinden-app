@@ -1256,3 +1256,36 @@ body.landing.about .site-header { animation: lp-rise 1.6s ease 0.6s both; }
   .mirror-card::after { display: none; }
   .mirror-card .mirror-text { animation: none; }
 }
+
+/* ===== ことばの灯：本が開いて、やさしい言葉が、1行ずつ、ふわっと浮かぶ =====
+   表紙の基本の位置は「開いたあと」。動きが使えない環境でも、言葉は隠れない */
+.lamp-book { position: relative; overflow: hidden; border-radius: 8px; padding: 0.2rem 0; }
+.lamp-cover {
+  position: absolute; top: 0; bottom: 0; width: 50.5%; z-index: 2; pointer-events: none;
+  background: linear-gradient(90deg, #a8742f, #c99a55 70%, #d9b074);
+  box-shadow: inset 0 0 0 2px rgba(255, 236, 190, 0.5);
+}
+.lamp-cover-left { left: 0; transform: translateX(-101%); animation: lamp-open-left 1.3s ease 0.4s both; }
+.lamp-cover-right { right: 0; transform: translateX(101%); animation: lamp-open-right 1.3s ease 0.4s both; }
+@keyframes lamp-open-left { from { transform: translateX(0); } to { transform: translateX(-101%); } }
+@keyframes lamp-open-right { from { transform: translateX(0); } to { transform: translateX(101%); } }
+.lamp-line {
+  display: inline;
+  animation: lamp-float 1.2s ease calc(1.3s + var(--i, 0) * 0.55s) both;
+}
+@keyframes lamp-float {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+/* inline の文字は transform が効かないので、行ごとに inline-block にする */
+.lamp-line { display: inline-block; margin-right: 0.2em; }
+.lamp-card { animation: lamp-glow 2.4s ease 1.2s 1 both; }
+@keyframes lamp-glow {
+  0% { box-shadow: 0 0 18px rgba(255, 170, 80, 0.3); }
+  50% { box-shadow: 0 0 34px rgba(255, 170, 80, 0.6); }
+  100% { box-shadow: 0 0 18px rgba(255, 170, 80, 0.3); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lamp-cover { display: none; }
+  .lamp-line, .lamp-card { animation: none; }
+}
