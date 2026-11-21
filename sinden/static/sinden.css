@@ -1200,3 +1200,10 @@ main, .pleas p, .mirror-text, .lamp-text { overflow-wrap: anywhere; }
   animation: flicker 2.4s infinite ease-in-out;
 }
 @media (prefers-reduced-motion: reduce) { .waiting-flame { animation: none; } }
+
+/* トップページ：「学び・ログイン・登録」も、文字と同じように、ふわっと浮かんで出てくる */
+body.landing:not(.about) .site-header { animation: lp-rise 1.9s ease 4.1s both; }
+body.landing.about .site-header { animation: lp-rise 1.6s ease 0.6s both; }
+@media (prefers-reduced-motion: reduce) {
+  body.landing .site-header { animation: none; }
+}
