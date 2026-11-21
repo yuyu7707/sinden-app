@@ -145,3 +145,30 @@ def test_flame_screen_explains_its_meaning(aoi, hikaru, login_as):
     ).get_data(as_text=True)
     assert "気づいたしるし" in html
     assert "よい・悪いを決めるものではありません" in html
+
+
+def test_reflect_button_and_waiting_notice_are_present(aoi, hikaru, login_as):
+    visit, a, h = open_shrine(aoi, hikaru, login_as)
+    speaker, _ = speaker_and_listener(visit, aoi, a, h)
+    html = speaker.get(f"/shrine/{visit.id}").get_data(as_text=True)
+    assert "data-reflect" in html
+    assert "data-mirror-waiting" in html
+    assert "女神の鏡に、映しています" in html
+    assert speaker.get("/static/mirror.js").status_code == 200
+
+
+def test_mirror_card_is_shown_after_reflect(aoi, hikaru, login_as, fake_ai):
+    visit, a, h = open_shrine(aoi, hikaru, login_as)
+    speaker, _ = speaker_and_listener(visit, aoi, a, h)
+    speaker.post(f"/shrine/{visit.id}/reflect", data={"body": "遅くて不安だった"})
+    html = speaker.get(f"/shrine/{visit.id}").get_data(as_text=True)
+    assert "mirror-card" in html and "mirror-text" in html
+
+
+def test_lamp_text_opens_like_a_book_and_keeps_text(aoi, hikaru, login_as, fake_ai):
+    visit, a, h = open_shrine(aoi, hikaru, login_as)
+    speaker, _ = speaker_and_listener(visit, aoi, a, h)
+    speaker.post(f"/shrine/{visit.id}/reflect", data={"body": "遅くて不安だった"})
+    html = speaker.get(f"/shrine/{visit.id}").get_data(as_text=True)
+    assert "lamp-book" in html and "lamp-cover-left" in html and "lamp-line" in html
+    assert "灯：遅くて不安だった" in html

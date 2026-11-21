@@ -76,11 +76,15 @@
         {% if reflect_block %}
           <p class="voice-note"><small>{{ reflect_block }}</small></p>
         {% else %}
-          <button type="submit" formaction="{{ url_for('shrine.reflect', visit_id=visit.id) }}" data-no-clear>
+          <button type="submit" formaction="{{ url_for('shrine.reflect', visit_id=visit.id) }}" data-no-clear data-reflect>
             届ける前に「女神の鏡」と、「ことばの灯」で確かめる
           </button>
         {% endif %}
         <button type="submit" class="secondary outline">このまま届ける</button>
+      </div>
+      <div class="mirror-waiting" data-mirror-waiting role="status" hidden>
+        <div class="mirror-pool" aria-hidden="true"><span></span><span></span><span></span></div>
+        <p>女神の鏡に、映しています…</p>
       </div>
       <div class="reactions">
         <p><small>言葉にならないときは、決まったことばを送れます（AI は使いません）。</small></p>
@@ -112,7 +116,16 @@
         <section class="lamp-card">
           <h3><span class="lamp-flame" aria-hidden="true"></span>ことばの灯</h3>
           <p><small>あなたの気持ちはそのままに、相手に届きやすい言い方の案です。使うかどうかは、あなたが決めます。</small></p>
-          <p class="lamp-text">{{ visit.draft_lamp }}</p>
+          {# 本の表紙が開いて、やさしい言葉が、1行ずつ浮かんでくる #}
+          <div class="lamp-book">
+            <span class="lamp-cover lamp-cover-left" aria-hidden="true"></span>
+            <span class="lamp-cover lamp-cover-right" aria-hidden="true"></span>
+            <p class="lamp-text">
+              {%- for line in visit.draft_lamp.replace('。', '。\n').split('\n') if line.strip() -%}
+                <span class="lamp-line" style="--i: {{ loop.index0 }}">{{ line }}</span>
+              {%- endfor -%}
+            </p>
+          </div>
           <form method="post" action="{{ url_for('shrine.plea', visit_id=visit.id) }}">
             {{ form.hidden_tag() }}
             <input type="hidden" name="source" value="lamp">
