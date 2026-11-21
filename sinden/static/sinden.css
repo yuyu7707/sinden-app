@@ -1289,3 +1289,15 @@ body.landing.about .site-header { animation: lp-rise 1.6s ease 0.6s both; }
   .lamp-cover { display: none; }
   .lamp-line, .lamp-card { animation: none; }
 }
+
+/* トップページ：アプリ名を、中央で大きく。キャッチコピーは、一段小さく */
+body.landing:not(.about) .lp-eyebrow {
+  font-size: clamp(2.6rem, 10vw, 5.2rem);
+  letter-spacing: 0.16em;
+  margin-bottom: 0.8rem;
+}
+body.landing:not(.about) .lp-copy h1 {
+  font-size: clamp(1.25rem, 4vw, 2.1rem);
+  line-height: 1.6;
+  margin-bottom: 0.8rem;
+}
