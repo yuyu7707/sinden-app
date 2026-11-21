@@ -1,4 +1,4 @@
-from flask import Blueprint, flash, redirect, render_template, url_for
+from flask import Blueprint, flash, jsonify, redirect, render_template, url_for
 from flask_login import current_user, login_required
 
 from sinden.extensions import db
@@ -8,6 +8,40 @@ from sinden.services import plans
 from sinden.services.safety import HELP_LINES
 
 bp = Blueprint("home", __name__)
+
+
+@bp.route("/manifest.webmanifest")
+def manifest():
+    """ホーム画面に追加するための情報（PWA）。Service Worker は使わない（古い画面が残らないように）"""
+    res = jsonify(
+        {
+            "name": "Placaの祠",
+            "short_name": "Placaの祠",
+            "description": "関係を続けたいふたりのための、ひとりずつ話せる場所",
+            "lang": "ja",
+            "start_url": "/",
+            "scope": "/",
+            "display": "standalone",
+            "background_color": "#12162e",
+            "theme_color": "#12162e",
+            "icons": [
+                {
+                    "src": url_for("static", filename="icons/icon-192.png"),
+                    "sizes": "192x192",
+                    "type": "image/png",
+                    "purpose": "any maskable",
+                },
+                {
+                    "src": url_for("static", filename="icons/icon-512.png"),
+                    "sizes": "512x512",
+                    "type": "image/png",
+                    "purpose": "any maskable",
+                },
+            ],
+        }
+    )
+    res.headers["Content-Type"] = "application/manifest+json"
+    return res
 
 
 def active_visit(pair: Pair | None) -> Visit | None:

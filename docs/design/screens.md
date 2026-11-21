@@ -37,6 +37,7 @@ S5〜S8 は同じ URL で、祠の状態（`Visit.status`）によってテン�
 
 | URL | メソッド | 使える人 | すること |
 |-|-|-|-|
+| `/manifest.webmanifest` | GET | 誰でも | ホーム画面に追加するための情報（PWA）。アイコンは `static/icons/` |
 | `/logout` | POST | ログインユーザー | ログアウト |
 | `/pair/create` | POST | ペアのない人 | 招待コードを作る |
 | `/pair/join` | POST | ペアのない人 | 招待コードでペアになる（2人そろったペアには入れない） |
