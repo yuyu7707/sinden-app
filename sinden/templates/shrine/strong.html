@@ -1,0 +1,35 @@
+{% extends "shrine/_layout.html" %}
+{% block panel %}
+<div class="sensor" role="alert">
+  <div class="sensor-flame" aria-hidden="true"><span></span></div>
+  <h2>女神の灯が、揺れました</h2>
+  <p>いま書いた言葉は、そのまま相手に届きます。</p>
+  <blockquote class="sensor-body">{{ body }}</blockquote>
+  <p><small>この画面は、あなたにだけ見えています。どれを選んでも、かまいません。</small></p>
+  <div class="sensor-actions">
+    <form method="post" action="{{ url_for('shrine.plea', visit_id=visit.id) }}">
+      {{ form.hidden_tag() }}
+      <textarea name="body" hidden>{{ body }}</textarea>
+      <input type="hidden" name="confirm" value="1">
+      <button type="submit" class="secondary outline">このまま届ける</button>
+    </form>
+    <form method="post" action="{{ url_for('shrine.plea', visit_id=visit.id) }}">
+      {{ form.hidden_tag() }}
+      <textarea name="body" hidden>{{ body }}</textarea>
+      <input type="hidden" name="rewrite" value="1">
+      <button type="submit" class="secondary outline">書き直す</button>
+    </form>
+    {% if visit.draft_text is none and not reflect_block %}
+      <form method="post" action="{{ url_for('shrine.reflect', visit_id=visit.id) }}">
+        {{ form.hidden_tag() }}
+        <textarea name="body" hidden>{{ body }}</textarea>
+        <button type="submit" class="secondary outline">「ことばの灯」で確かめる</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='sensor.js') }}"></script>
+{% endblock %}

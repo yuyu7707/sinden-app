@@ -52,6 +52,7 @@ erDiagram
         string theme "night / morning"
         int current_speaker_id FK "nullable（話す番の人）"
         datetime turn_started_at "nullable"
+        boolean turn_extended "番の延長を使ったか"
         bool inviter_agreed
         bool invitee_agreed
         bool inviter_leave
@@ -151,7 +152,8 @@ erDiagram
 | status | String(20) | ○ | 下の「状態の移り変わり」 |
 | theme | String(10) | ○ | night（夜の祠）/ morning（ローマの朝） |
 | current_speaker_id | int FK → users | | 話す番の人 |
-| turn_started_at | DateTime | | 番が始まった時刻（残り時間の計算に使う） |
+| turn_started_at | DateTime | | 番が始まった時刻（残り時間の計算に使う。延長すると、5分ぶん後ろにずらす） |
+| turn_extended | Boolean | ○ | この番で「もう少し、待ってください」を使ったか（番が替わると False に戻す。既定 False） |
 | inviter_agreed / invitee_agreed | Boolean | ○ | 掟に従ったか |
 | inviter_leave / invitee_leave | Boolean | ○ | 「祠を出よう」と言ったか |
 | inviter_keep / invitee_keep | Boolean | | 記録を残すか（未選択は null） |

@@ -22,9 +22,17 @@
 {% if is_speaker %}
   <h2>あなたが訴える番です</h2>
   <p class="presence" data-presence>
-    {% if partner_present %}{{ partner.name }}さんが隣で聴いています{% else %}{{ partner.name }}さんの灯りが消えています{% endif %}
+    {% if partner_present %}{{ partner.name }}さんが隣で聴いています{% else %}{{ partner.name }}さんの灯りが消えています（席を外しているようです）{% endif %}
   </p>
   <p class="timer">残り <span id="timer" data-remaining="{{ remaining }}">{{ remaining // 60 }}:{{ '%02d' % (remaining % 60) }}</span></p>
+  {% if visit.turn_extended %}
+    <p class="presence"><small>あと5分、待ってもらっています。</small></p>
+  {% else %}
+    <form method="post" action="{{ url_for('shrine.extend', visit_id=visit.id) }}" class="extend-form">
+      {{ form.hidden_tag() }}
+      <button type="submit" class="secondary outline small">もう少し、待ってください（あと5分）</button>
+    </form>
+  {% endif %}
   <p id="time-up" class="presence" role="status" hidden>持ち時間です。届けるなら、1分以内に「届ける」を押してください。過ぎると番が相手に移り、書きかけの言葉は届きません。</p>
 
   {% if visit.draft_text is none %}
@@ -47,7 +55,7 @@
         {% endif %}
       </div>
       <textarea name="body" id="plea-body" rows="7" maxlength="{{ max_chars }}"
-                placeholder="女神に向かって、言いたいことを。相手は黙って聴いています。"></textarea>
+                placeholder="女神に向かって、言いたいことを。相手は黙って聴いています。">{{ prefill or '' }}</textarea>
       <p class="row"><small><span id="count">0</span> / {{ max_chars }}文字</small></p>
       <div class="two-tools">
         <p><small>届ける前に、次の2つで確かめられます。<strong>あなたにだけ</strong>見えて、相手には見えません。</small></p>
@@ -117,7 +125,7 @@
         {{ form.hidden_tag() }}
         <h3>あなたの言葉</h3>
         <p><small>このまま届けても、書き直してから届けてもかまいません。</small></p>
-        <textarea name="body" id="plea-body" rows="6" maxlength="{{ max_chars }}" data-prefilled>{{ visit.draft_text }}</textarea>
+        <textarea name="body" id="plea-body" rows="6" maxlength="{{ max_chars }}" data-prefilled>{{ prefill if prefill is defined and prefill is not none else visit.draft_text }}</textarea>
         <p class="row"><small><span id="count">0</span> / {{ max_chars }}文字</small></p>
         <button type="submit" class="{% if visit.draft_lamp and not visit.draft_danger %}secondary{% endif %}">自分の言葉で届ける</button>
       </form>
@@ -127,6 +135,9 @@
 {% else %}
   <h2>いまは聴く番です</h2>
   <p class="presence">{{ partner.name }}さんが女神に訴えています。話し終わるまで、黙って聴きましょう。</p>
+  {% if visit.turn_extended %}
+    <p class="presence"><small>{{ partner.name }}さんは、言葉を探しています。</small></p>
+  {% endif %}
   <p class="timer">残り <span id="timer" data-remaining="{{ remaining }}" data-passive="1">{{ remaining // 60 }}:{{ '%02d' % (remaining % 60) }}</span></p>
 {% endif %}
 
