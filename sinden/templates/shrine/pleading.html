@@ -76,7 +76,7 @@
         {% if reflect_block %}
           <p class="voice-note"><small>{{ reflect_block }}</small></p>
         {% else %}
-          <button type="submit" formaction="{{ url_for('shrine.reflect', visit_id=visit.id) }}" data-no-clear data-reflect>
+          <button type="submit" class="reflect-cta" formaction="{{ url_for('shrine.reflect', visit_id=visit.id) }}" data-no-clear data-reflect>
             届ける前に「女神の鏡」と、「ことばの灯」で確かめる
           </button>
         {% endif %}

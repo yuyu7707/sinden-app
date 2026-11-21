@@ -172,3 +172,11 @@ def test_lamp_text_opens_like_a_book_and_keeps_text(aoi, hikaru, login_as, fake_
     html = speaker.get(f"/shrine/{visit.id}").get_data(as_text=True)
     assert "lamp-book" in html and "lamp-cover-left" in html and "lamp-line" in html
     assert "灯：遅くて不安だった" in html
+
+
+def test_reflect_button_is_the_main_call_to_action(aoi, hikaru, login_as):
+    visit, a, h = open_shrine(aoi, hikaru, login_as)
+    speaker, _ = speaker_and_listener(visit, aoi, a, h)
+    html = speaker.get(f"/shrine/{visit.id}").get_data(as_text=True)
+    assert 'class="reflect-cta"' in html
+    assert "「女神の鏡」と、「ことばの灯」で確かめる" in html
