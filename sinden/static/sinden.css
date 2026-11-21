@@ -1141,6 +1141,6 @@ body.landing .site-header nav ul li { padding-left: 0.9rem; padding-right: 0.9re
 @media (max-width: 600px) {
   body.landing .site-header nav ul:last-child { width: auto; margin-left: auto; justify-content: flex-end; padding-right: 0.6rem; }
   body.landing .site-header nav ul li { padding-left: 0.6rem; padding-right: 0.6rem; }
-  /* 「。」の右の空きで、文字が左に寄って見えるので、ほんの少し右にする */
-  .lp-copy h1 { padding-left: 0.6em; }
 }
+/* 「。」の右の空きで、文字が左に寄って見えるので、ほんの少し右にする（PC もスマホも） */
+.lp-copy h1 { padding-left: 0.6em; }
