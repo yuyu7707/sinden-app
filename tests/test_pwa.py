@@ -23,3 +23,9 @@ def test_pages_link_the_manifest(client_anon):
 
 def test_no_service_worker(client_anon):
     assert client_anon.get("/sw.js").status_code == 404
+
+
+def test_logged_out_pages_use_the_anon_header(client_anon, aoi, login_as):
+    assert "site-header anon" in client_anon.get("/login").get_data(as_text=True)
+    html = login_as(aoi).get("/").get_data(as_text=True)
+    assert "site-header anon" not in html
