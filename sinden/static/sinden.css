@@ -1103,3 +1103,19 @@ body.landing:not(.about) .lp-scene.with-photo .lp-goddess { animation-duration: 
 body.landing:not(.about) .lp-lights { animation-duration: 9s; }
 body.landing:not(.about) .lp-copy { animation-delay: 4.1s; animation-duration: 1.9s; }
 body.landing:not(.about) .lp-scroll { animation-delay: 6s; }
+
+/* 女神の鏡・ことばの灯を、目立たせる */
+.two-tools { margin-top: 0.8rem; }
+.tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; margin: 0.5rem 0; }
+.tool {
+  padding: 0.7rem 0.8rem; border-radius: 10px; border: 1.5px solid var(--stone);
+  text-align: center;
+}
+.tool h3 { margin: 0 0 0.2rem; font-size: 1.25rem; color: var(--gold); display: flex; justify-content: center; align-items: center; gap: 0.45rem; }
+.tool p { margin: 0; font-size: 0.9rem; }
+.tool-mirror { background: rgba(140, 129, 114, 0.12); }
+.tool-lamp { border-color: var(--gold); background: rgba(217, 163, 91, 0.12); box-shadow: 0 0 14px rgba(255, 170, 70, 0.25); }
+.mirror-card { border-width: 2px; }
+.mirror-card h3, .lamp-card h3 { font-size: 1.4rem; color: var(--gold); }
+.lamp-card { border-width: 2px; box-shadow: 0 0 18px rgba(255, 170, 70, 0.3); }
+@media (max-width: 480px) { .tools-grid { grid-template-columns: 1fr; } }

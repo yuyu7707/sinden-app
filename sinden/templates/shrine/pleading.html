@@ -65,12 +65,18 @@
           <button type="submit" class="secondary outline small" formaction="{{ url_for('shrine.react', visit_id=visit.id) }}" name="key" value="{{ key }}" formnovalidate>{{ phrase }}</button>
         {% endfor %}
       </div>
-      <div class="check-note">
-        <p><small>「ことばを確かめる」を押すと、相手に届ける前に、<strong>あなたにだけ</strong>次の2つが出ます。</small></p>
-        <ul>
-          <li><small><strong>女神の鏡</strong>：あなたの言葉が、どう聞こえるか</small></li>
-          <li><small><strong>ことばの灯</strong>：思いやりのある言い方の案</small></li>
-        </ul>
+      <div class="two-tools">
+        <p><small>「確かめる」を押すと、相手に届ける前に、<strong>あなたにだけ</strong>次の2つが出ます。</small></p>
+        <div class="tools-grid">
+          <section class="tool tool-mirror">
+            <h3>女神の鏡</h3>
+            <p>あなたの言葉が、どう聞こえるか</p>
+          </section>
+          <section class="tool tool-lamp">
+            <h3><span class="lamp-flame" aria-hidden="true"></span>ことばの灯</h3>
+            <p>思いやりのある言い方の案</p>
+          </section>
+        </div>
         <p><small>どちらも相手には見えません。届けるかどうか、どの言葉で届けるかは、そのあとあなたが決めます。</small></p>
       </div>
     </form>
