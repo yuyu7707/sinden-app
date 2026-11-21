@@ -3,14 +3,10 @@ from wtforms import (
     BooleanField,
     EmailField,
     PasswordField,
-    RadioField,
     StringField,
     TextAreaField,
 )
-from wtforms.fields.choices import SelectChoice
 from wtforms.validators import DataRequired, Length, Regexp
-
-from sinden.models import Theme
 
 EMAIL = Regexp(
     r"^[^@\s]+@[^@\s]+\.[^@\s]+$", message="メールアドレスの形式で入力してください"
@@ -58,14 +54,7 @@ class JoinPairForm(FlaskForm):
 
 
 class InviteForm(FlaskForm):
-    theme = RadioField(
-        "祠の版",
-        choices=[
-            SelectChoice(Theme.NIGHT, "夜の祠"),
-            SelectChoice(Theme.MORNING, "ローマの朝（プラン）"),
-        ],
-        default=Theme.NIGHT,
-    )
+    """誘うだけのフォーム（CSRF のため）。祠の版は誘った時刻で決まる"""
 
 
 class PleaForm(FlaskForm):

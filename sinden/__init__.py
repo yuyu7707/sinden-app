@@ -38,11 +38,12 @@ def create_app(config=None):
         PRICE_PAIR=int(os.environ.get("PRICE_PAIR", "800")),
         # 1回の訴えの持ち時間（秒）。途中で自分から終えてもよい
         TURN_SECONDS=300,
+        INVITE_EXPIRE_HOURS=24,
         # 訴えの最大文字数（5分で話せる量より少し多め）
         PLEA_MAX_CHARS=3000,
         # 女神の鏡を1人が月に使える回数。プランの30回は、3日に1回喧嘩しても足りる量。
         # 1回 約4.5円（Opus 5.5、5分の訴え。鏡と灯をまとめて作る）なので、使い切っても黒字になる
-        MIRROR_FREE_PER_MONTH=3,
+        MIRROR_FREE_PER_MONTH=1,
         MIRROR_PREMIUM_PER_MONTH=30,
         # 使い切ったときの追加購入（1回払い）。10回 100円なら、AI の費用 約45円で黒字
         MIRROR_PACK_SIZE=10,

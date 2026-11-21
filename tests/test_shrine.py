@@ -5,10 +5,10 @@ from sinden.models import MirrorUse, Plea, Visit, VisitStatus, now
 from sinden.services.ai import AIError
 
 
-def open_shrine(aoi, hikaru, login_as, theme="night"):
+def open_shrine(aoi, hikaru, login_as):
     """あおいが誘い、ひかるが応じ、ふたりとも掟に従うところまで進める"""
     a, h = login_as(aoi), login_as(hikaru)
-    a.post("/shrine/invite", data={"theme": theme})
+    a.post("/shrine/invite")
     visit = db.session.scalar(db.select(Visit))
     h.post(f"/shrine/{visit.id}/accept")
     a.post(f"/shrine/{visit.id}/agree")
@@ -224,17 +224,53 @@ def test_one_no_deletes_pleas(aoi, hikaru, login_as):
     assert a.get(f"/records/{visit.id}").status_code == 404
 
 
-def test_morning_theme_requires_premium(aoi, hikaru, login_as):
+def test_theme_is_chosen_by_time():
+    from datetime import datetime
+
+    from sinden.models import Theme
+
+    for hour, expected in [
+        (4, "night"),
+        (5, "morning"),
+        (17, "morning"),
+        (18, "night"),
+        (23, "night"),
+        (0, "night"),
+    ]:
+        assert Theme.for_time(datetime(2026, 11, 21, hour, 30)) == expected
+
+
+def test_invite_at_noon_is_morning_and_free(aoi, hikaru, login_as, monkeypatch):
+    from datetime import datetime
+
+    monkeypatch.setattr(
+        "sinden.views.shrine.now", lambda: datetime(2026, 11, 21, 12, 0)
+    )
     a = login_as(aoi)
-    res = a.post("/shrine/invite", data={"theme": "morning"})
-    assert res.headers["Location"].endswith("/billing")
-    assert db.session.scalar(db.select(Visit)) is None
-
-
-def test_morning_theme_with_premium(aoi, hikaru, login_as, premium):
-    visit, a, _h = open_shrine(aoi, hikaru, login_as, theme="morning")
+    a.post("/shrine/invite")
+    visit = db.session.scalar(db.select(Visit))
     assert visit.theme == "morning"
     assert "ローマの朝" in a.get(f"/shrine/{visit.id}").get_data(as_text=True)
+
+
+def test_invite_at_night_is_night(aoi, hikaru, login_as, monkeypatch):
+    from datetime import datetime
+
+    monkeypatch.setattr(
+        "sinden.views.shrine.now", lambda: datetime(2026, 11, 21, 22, 0)
+    )
+    login_as(aoi).post("/shrine/invite")
+    assert db.session.scalar(db.select(Visit)).theme == "night"
+
+
+def test_invite_ignores_theme_sent_by_client(aoi, hikaru, login_as, monkeypatch):
+    from datetime import datetime
+
+    monkeypatch.setattr(
+        "sinden.views.shrine.now", lambda: datetime(2026, 11, 21, 22, 0)
+    )
+    login_as(aoi).post("/shrine/invite", data={"theme": "morning"})
+    assert db.session.scalar(db.select(Visit)).theme == "night"
 
 
 def test_cancel_invitation(aoi, hikaru, login_as):
@@ -343,3 +379,84 @@ def test_no_lamp_when_danger_words(aoi, hikaru, login_as):
     db.session.refresh(visit)
     assert visit.draft_danger
     assert visit.draft_lamp is None
+
+
+def test_stale_invite_is_cancelled_quietly(aoi, hikaru, login_as, app):
+    a = login_as(aoi)
+    a.post("/shrine/invite")
+    visit = db.session.scalar(db.select(Visit))
+    visit.created_at = now() - timedelta(hours=25)
+    db.session.commit()
+    h = login_as(hikaru)
+    res = h.get("/")
+    assert "誘っています" not in res.get_data(as_text=True)
+    db.session.refresh(visit)
+    assert visit.status == VisitStatus.CANCELLED
+
+
+def test_cannot_accept_stale_invite(aoi, hikaru, login_as):
+    a = login_as(aoi)
+    a.post("/shrine/invite")
+    visit = db.session.scalar(db.select(Visit))
+    visit.created_at = now() - timedelta(hours=25)
+    db.session.commit()
+    res = login_as(hikaru).post(f"/shrine/{visit.id}/accept")
+    assert res.status_code == 302
+    db.session.refresh(visit)
+    assert visit.status == VisitStatus.CANCELLED
+
+
+def test_fresh_invite_can_still_be_accepted(aoi, hikaru, login_as):
+    a = login_as(aoi)
+    a.post("/shrine/invite")
+    visit = db.session.scalar(db.select(Visit))
+    visit.created_at = now() - timedelta(hours=23)
+    db.session.commit()
+    login_as(hikaru).post(f"/shrine/{visit.id}/accept")
+    db.session.refresh(visit)
+    assert visit.status == VisitStatus.RULES
+
+
+def test_share_button_only_for_inviter_and_has_no_secrets(aoi, hikaru, login_as):
+    a = login_as(aoi)
+    a.post("/shrine/invite")
+    visit = db.session.scalar(db.select(Visit))
+    mine = a.get(f"/shrine/{visit.id}").get_data(as_text=True)
+    assert "data-share" in mine
+    theirs = login_as(hikaru).get(f"/shrine/{visit.id}").get_data(as_text=True)
+    assert "data-share" not in theirs
+
+
+def test_reaction_is_sent_and_passes_turn(aoi, hikaru, login_as, fake_ai):
+    visit, a, h = open_shrine(aoi, hikaru, login_as)
+    speaker = a if visit.current_speaker_id == aoi.id else h
+    res = speaker.post(f"/shrine/{visit.id}/react", data={"key": "speechless"})
+    assert res.status_code == 302
+    db.session.refresh(visit)
+    plea = visit.pleas[0]
+    assert plea.body == "いまは言葉にならない"
+    assert plea.source == "reaction"
+    assert visit.current_speaker_id != plea.user_id
+    # AI も鏡の回数も使わない
+    assert db.session.scalar(db.select(db.func.count(MirrorUse.id))) == 0
+
+
+def test_reaction_rejects_unknown_key_and_free_text(aoi, hikaru, login_as):
+    visit, a, h = open_shrine(aoi, hikaru, login_as)
+    speaker = a if visit.current_speaker_id == aoi.id else h
+    assert (
+        speaker.post(
+            f"/shrine/{visit.id}/react", data={"key": "ふざけんな"}
+        ).status_code
+        == 400
+    )
+    assert speaker.post(f"/shrine/{visit.id}/react", data={}).status_code == 400
+    assert not visit.pleas
+
+
+def test_reaction_only_by_speaker(aoi, hikaru, login_as):
+    visit, a, h = open_shrine(aoi, hikaru, login_as)
+    listener = h if visit.current_speaker_id == aoi.id else a
+    listener.post(f"/shrine/{visit.id}/react", data={"key": "heard"})
+    db.session.refresh(visit)
+    assert not visit.pleas

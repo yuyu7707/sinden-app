@@ -209,6 +209,9 @@ body.in-shrine.theme-morning { background: #fbf6ea; }
 
 .pleas { list-style: none; padding: 0; }
 .pleas li { padding: 0.6rem 0.9rem; border-left: 3px solid var(--stone); margin-bottom: 0.7rem; }
+.reactions { margin: 0.8rem 0; }
+.reactions button { margin: 0 0.4rem 0.4rem 0; width: auto; }
+.pleas li.reaction p { font-style: italic; opacity: 0.85; }
 .pleas li.mine { border-left-color: var(--flame); }
 .pleas li p { margin: 0.2rem 0 0; white-space: pre-wrap; }
 
@@ -1100,3 +1103,33 @@ body.landing:not(.about) .lp-scene.with-photo .lp-goddess { animation-duration: 
 body.landing:not(.about) .lp-lights { animation-duration: 9s; }
 body.landing:not(.about) .lp-copy { animation-delay: 4.1s; animation-duration: 1.9s; }
 body.landing:not(.about) .lp-scroll { animation-delay: 6s; }
+
+/* 女神の鏡・ことばの灯を、目立たせる */
+.two-tools { margin-top: 0.8rem; }
+.tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; margin: 0.5rem 0; }
+.tool {
+  padding: 0.7rem 0.8rem; border-radius: 10px; border: 1.5px solid var(--stone);
+  text-align: center;
+}
+.tool h3 { margin: 0 0 0.2rem; font-size: 1.25rem; color: var(--gold); display: flex; justify-content: center; align-items: center; gap: 0.45rem; }
+.tool p { margin: 0; font-size: 0.9rem; }
+.tool-mirror { background: rgba(140, 129, 114, 0.12); }
+.tool-lamp { border-color: var(--gold); background: rgba(217, 163, 91, 0.12); box-shadow: 0 0 14px rgba(255, 170, 70, 0.25); }
+.mirror-card { border-width: 2px; }
+.mirror-card h3, .lamp-card h3 { font-size: 1.4rem; color: var(--gold); }
+.lamp-card { border-width: 2px; box-shadow: 0 0 18px rgba(255, 170, 70, 0.3); }
+@media (max-width: 480px) { .tools-grid { grid-template-columns: 1fr; } }
+
+/* 画面の幅に合わせる：ヘッダーは、狭いときに2段にして、文字を折り返さない */
+.site-header nav { flex-wrap: wrap; row-gap: 0.2rem; }
+.site-header a, .site-header button, .brand { white-space: nowrap; }
+@media (max-width: 600px) {
+  .site-header nav ul:last-child { width: 100%; justify-content: space-between; align-items: center; }
+  .site-header nav ul li { padding: 0.25rem 0.35rem; }
+}
+/* 明るい背景でも読める金色（夜の祠は、暗い背景なので元の金色） */
+.tool h3, .mirror-card h3, .lamp-card h3 { color: #8a5a1f; }
+.theme-night .tool h3, .theme-night .mirror-card h3, .theme-night .lamp-card h3 { color: var(--gold); }
+/* 長い言葉や URL で、横にはみ出さない */
+main, .pleas p, .mirror-text, .lamp-text { overflow-wrap: anywhere; }
+img, svg, video { max-width: 100%; height: auto; }

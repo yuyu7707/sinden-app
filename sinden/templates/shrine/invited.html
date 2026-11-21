@@ -3,6 +3,9 @@
 {% if me_role == 'inviter' %}
   <h2>{{ partner.name }}さんを、祠に誘いました</h2>
   <p class="presence">{{ partner.name }}さんが応じると、祠が開きます。</p>
+  <p><small>誘いは、24時間たつと静かに取り消されます。</small></p>
+  <button type="button" data-share data-title="Placaの祠" data-text="{{ current_user.name }}さんが、Placaの祠に誘っています。開いて、応じてください。">相手に誘いを送る</button>
+  <p><small data-share-note hidden></small></p>
   <form method="post" action="{{ url_for('shrine.cancel', visit_id=visit.id) }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <button type="submit" class="secondary outline">誘いを取り消す</button>

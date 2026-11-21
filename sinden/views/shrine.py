@@ -16,6 +16,7 @@ from flask import (
 from flask_login import current_user
 from sqlalchemy.orm.attributes import flag_modified
 
+from sinden.content import REACTIONS
 from sinden.decorators import pair_required
 from sinden.extensions import db
 from sinden.forms import InviteForm, PleaForm
@@ -23,7 +24,7 @@ from sinden.models import Pair, Plea, Theme, Visit, VisitStatus, now
 from sinden.services import plans
 from sinden.services.ai import AIError
 from sinden.services.safety import HELP_LINES, has_danger_words
-from sinden.views.home import active_visit
+from sinden.views.home import active_visit, expire_stale_invite
 
 bp = Blueprint("shrine", __name__, url_prefix="/shrine")
 
@@ -134,11 +135,7 @@ def invite():
     if visit is not None:
         db.session.rollback()
         return back(visit)
-    theme = form.theme.data
-    if theme == Theme.MORNING and not current_user.pair.is_premium:
-        db.session.rollback()
-        flash("ローマの朝の祠は、どちらかがプランに入ると選べます")
-        return redirect(url_for("billing.index"))
+    theme = Theme.for_time(now())
     visit = Visit(
         pair=current_user.pair,
         inviter=current_user,
@@ -162,6 +159,9 @@ def show(visit_id):
             return redirect(url_for("records.show", visit_id=visit.id))
         flash("祠を後にしました。今回の訴えは残していません")
         return redirect(url_for("home.index"))
+    if expire_stale_invite(visit):
+        flash("この誘いは、時間がたったので取り消されました")
+        return redirect(url_for("home.index"))
     expire_turn_if_away(visit)
     current_user.last_seen = now()
     db.session.commit()
@@ -183,6 +183,7 @@ def show(visit_id):
         partner_present=is_present(partner),
         my_last=my_last,
         form=PleaForm(),
+        reactions=REACTIONS,
         help_lines=HELP_LINES,
         # 祠に入ったとき（掟の確認）だけ、近づいていく演出を見せる
         intro=visit.status == VisitStatus.RULES,
@@ -217,6 +218,11 @@ def state(visit_id):
 @pair_required
 def accept(visit_id):
     visit = get_locked_visit(visit_id)
+    if expire_stale_invite(visit):
+        flash(
+            "この誘いは、時間がたったので取り消されました。もう一度誘ってもらってください"
+        )
+        return redirect(url_for("home.index"))
     if visit.status == VisitStatus.INVITED and visit.invitee_id == current_user.id:
         visit.status = VisitStatus.RULES
         db.session.commit()
@@ -369,6 +375,39 @@ def plea(visit_id):
             mirror_note=visit.draft_note if has_draft else None,
             danger=(has_draft and visit.draft_danger) or has_danger_words(body),
             source=source,
+        )
+    )
+    pass_turn(visit)
+    db.session.commit()
+    return back(visit)
+
+
+@bp.route("/<int:visit_id>/react", methods=["POST"])
+@pair_required
+def react(visit_id):
+    """言葉にならないときの、決まったリアクション。AI は使わず、鏡の回数にも数えない"""
+    visit = get_locked_visit(visit_id)
+    if visit.status != VisitStatus.PLEADING:
+        db.session.rollback()
+        return back(visit)
+    if visit.current_speaker_id != current_user.id:
+        db.session.rollback()
+        flash("いまは聴く番です")
+        return back(visit)
+    form = PleaForm()
+    if not form.validate_on_submit():
+        abort(400)
+    # ことばは、フォームから受け取らず、サーバーの決まりから選ぶ
+    phrase = REACTIONS.get(request.form.get("key", ""))
+    if phrase is None:
+        abort(400)
+    db.session.add(
+        Plea(
+            visit=visit,
+            user=current_user,
+            seq=len(visit.pleas) + 1,
+            body=phrase,
+            source="reaction",
         )
     )
     pass_turn(visit)

@@ -37,15 +37,17 @@ S5〜S8 は同じ URL で、祠の状態（`Visit.status`）によってテン�
 
 | URL | メソッド | 使える人 | すること |
 |-|-|-|-|
+| `/manifest.webmanifest` | GET | 誰でも | ホーム画面に追加するための情報（PWA）。アイコンは `static/icons/` |
 | `/logout` | POST | ログインユーザー | ログアウト |
 | `/pair/create` | POST | ペアのない人 | 招待コードを作る |
 | `/pair/join` | POST | ペアのない人 | 招待コードでペアになる（2人そろったペアには入れない） |
-| `/shrine/invite` | POST | ペアのメンバー | 祠に誘う（版を選ぶ。ローマの朝はプラン） |
-| `/shrine/<id>/accept` | POST | 誘われた人 | 応じる（invited → rules） |
+| `/shrine/invite` | POST | ペアのメンバー | 祠に誘う（版は誘った時刻で自動に決まる。18:00〜翌5:00 は夜、5:00〜18:00 は朝。どちらも無料） |
+| `/shrine/<id>/accept` | POST | 誘われた人 | 応じる（invited → rules）。誘って24時間たった誘いは、取り消し（cancelled）になっていて応じられない |
 | `/shrine/<id>/cancel` | POST | ペアの2人 | 誘いを取り消す／見送る（invited → cancelled） |
 | `/shrine/<id>/agree` | POST | ペアの2人 | 掟に従う。ふたりそろうと訴え始め（誘われた側から） |
 | `/shrine/<id>/reflect` | POST | **話す番の人だけ** | ことばを確かめる。鏡と灯を作り、下書きに置く（相手には届かない。1回の番で1回まで） |
 | `/shrine/<id>/plea` | POST | **話す番の人だけ** | 届ける（`source=lamp` なら灯の言い方）。番を交代し、下書きを消す。空のときは届けず、番も替えない |
+| `/shrine/<id>/react` | POST | **話す番の人だけ** | リアクション（`key` は決まった5つのみ。それ以外は 400）。決まったことばを訴えとして残し、番を交代する。AI は使わない |
 | `/shrine/<id>/leave` | POST | ペアの2人 | 祠を出よう（`stay=1` で取り消し）。ふたりそろうと和解 |
 | `/shrine/<id>/stop` | POST | ペアの2人（**ひとりで**） | 祠を中断する（掟・訴えの間）。closed・記録は残さない。訴えと下書きを消す |
 | `/shrine/<id>/keep` | POST | ペアの2人 | 記録を残す／残さない。「残さない」は、相手の返事を待たずに終了して訴えを消す（「残す」は、ふたりそろったとき残る） |

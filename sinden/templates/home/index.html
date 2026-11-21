@@ -69,12 +69,7 @@
       <p>言い合いが止まらないとき、言いたいことが言えないとき。{{ partner.name }}さんを祠に誘いましょう。</p>
       <form method="post" action="{{ url_for('shrine.invite') }}">
         {{ invite_form.hidden_tag() }}
-        <fieldset>
-          <legend>祠の版</legend>
-          {% for opt in invite_form.theme %}
-            <label>{{ opt() }} {{ opt.label.text }}</label>
-          {% endfor %}
-        </fieldset>
+        <p><small>祠の背景は、いまの時刻で決まります（18時〜翌5時は夜、5時〜18時は朝）。</small></p>
         <button type="submit">祠へ行こう</button>
       </form>
     </article>
