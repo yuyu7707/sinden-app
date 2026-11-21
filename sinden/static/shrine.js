@@ -88,7 +88,7 @@
       if (presence) {
         presence.textContent = data.partner_present
           ? `${partnerName}さんが隣で聴いています`
-          : `${partnerName}さんの灯りが消えています`;
+          : `${partnerName}さんの灯りが消えています（席を外しているようです）`;
       }
       if (timer && Math.abs(data.remaining - remaining) > 3) {
         remaining = data.remaining;

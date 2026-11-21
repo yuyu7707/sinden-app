@@ -170,6 +170,10 @@ class Visit(db.Model):
     theme: Mapped[str] = mapped_column(String(10), default=Theme.NIGHT)
     current_speaker_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     turn_started_at: Mapped[datetime | None] = mapped_column(DateTime)
+    # この番で「もう少し、待ってください」を使ったか（番が替わると False に戻す）
+    turn_extended: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default=db.false()
+    )
     # ふたりそれぞれの意思表示（inviter_* / invitee_*）
     inviter_agreed: Mapped[bool] = mapped_column(Boolean, default=False)
     invitee_agreed: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -249,6 +253,7 @@ class Visit(db.Model):
                 self.invitee_leave,
                 self.inviter_keep,
                 self.invitee_keep,
+                self.turn_extended,
             )
         )
 

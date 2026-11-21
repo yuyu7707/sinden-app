@@ -23,7 +23,7 @@ from sinden.forms import InviteForm, PleaForm
 from sinden.models import Pair, Plea, Theme, Visit, VisitStatus, now
 from sinden.services import plans
 from sinden.services.ai import AIError
-from sinden.services.safety import HELP_LINES, has_danger_words
+from sinden.services.safety import HELP_LINES, has_danger_words, has_strong_words
 from sinden.views.home import active_visit, expire_stale_invite
 
 bp = Blueprint("shrine", __name__, url_prefix="/shrine")
@@ -65,6 +65,7 @@ def pass_turn(visit: Visit) -> None:
         else visit.inviter_id
     )
     visit.turn_started_at = now()
+    visit.turn_extended = False
     clear_draft(visit)
 
 
@@ -166,13 +167,17 @@ def show(visit_id):
     current_user.last_seen = now()
     db.session.commit()
 
+    return render_template(f"shrine/{visit.status}.html", **shrine_context(visit))
+
+
+def shrine_context(visit: Visit) -> dict:
+    """祠の画面を作るための値（show と、届ける前の確認の画面で共通）"""
     partner = visit.partner(current_user)
     my_last = None
     for plea in visit.pleas:
         if plea.user_id == current_user.id:
             my_last = plea
-    return render_template(
-        f"shrine/{visit.status}.html",
+    return dict(  # noqa: C408
         visit=visit,
         partner=partner,
         me_role=visit.role(current_user),
@@ -348,6 +353,13 @@ def plea(visit_id):
         db.session.rollback()
         return error
 
+    # 「書き直す」：書いた言葉を残したまま、書く画面に戻す（届けない）
+    if request.form.get("rewrite") == "1" and body:
+        db.session.rollback()
+        return render_template(
+            "shrine/pleading.html", **shrine_context(visit), prefill=body
+        )
+
     # 鏡・灯は、この番の下書きがあるときだけ使う
     has_draft = visit.draft_text is not None
     use_lamp = has_draft and request.form.get("source") == "lamp" and visit.draft_lamp
@@ -365,6 +377,15 @@ def plea(visit_id):
     else:
         source = "own"
 
+    # 強い言葉は、届ける前に1回だけ、女神の灯が揺れる確認を出す（本人にだけ。止めない）
+    if (
+        source in ("own", "edited")
+        and has_strong_words(body)
+        and request.form.get("confirm") != "1"
+    ):
+        db.session.rollback()
+        return render_template("shrine/strong.html", **shrine_context(visit), body=body)
+
     db.session.add(
         Plea(
             visit=visit,
@@ -378,6 +399,34 @@ def plea(visit_id):
         )
     )
     pass_turn(visit)
+    db.session.commit()
+    return back(visit)
+
+
+@bp.route("/<int:visit_id>/extend", methods=["POST"])
+@pair_required
+def extend(visit_id):
+    """「もう少し、待ってください」：番ごとに1回だけ、持ち時間をあと TURN_SECONDS 秒延ばす"""
+    visit = get_locked_visit(visit_id)
+    expire_turn_if_away(visit)
+    form = PleaForm()
+    if not form.validate_on_submit():
+        abort(400)
+    if (
+        visit.status != VisitStatus.PLEADING
+        or visit.current_speaker_id != current_user.id
+    ):
+        # 持ち時間を過ぎていて、いま番が移ったときも、その移動を残す
+        db.session.commit()
+        return back(visit)
+    if visit.turn_extended:
+        db.session.rollback()
+        flash("待ってもらえるのは、1回の番に1回だけです")
+        return back(visit)
+    visit.turn_started_at = visit.turn_started_at + timedelta(
+        seconds=current_app.config["TURN_SECONDS"]
+    )
+    visit.turn_extended = True
     db.session.commit()
     return back(visit)
 

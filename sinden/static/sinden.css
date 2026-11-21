@@ -1144,3 +1144,30 @@ img, svg, video { max-width: 100%; height: auto; }
 }
 /* 「。」の右の空きで、文字が左に寄って見えるので、ほんの少し右にする（PC もスマホも） */
 .lp-copy h1 { padding-left: 0.6em; }
+
+/* 女神の灯が揺れる（強い言葉のセンサー）：はっきり分かるように、大きく揺らす */
+.sensor { text-align: center; padding: 0.5rem 0 1rem; }
+.sensor-flame { height: 150px; display: flex; align-items: flex-end; justify-content: center; margin-bottom: 0.5rem; }
+.sensor-flame span {
+  display: block; width: 64px; height: 110px; border-radius: 50% 50% 50% 50% / 62% 62% 38% 38%;
+  background: radial-gradient(circle at 50% 75%, #fff6d0, var(--flame) 55%, #e0742a);
+  transform-origin: 50% 100%;
+  animation: sensor-sway 1.8s ease-in-out infinite;
+}
+@keyframes sensor-sway {
+  0%   { transform: rotate(0deg) scale(1, 1);       box-shadow: 0 0 30px 10px var(--flame-glow); }
+  15%  { transform: rotate(-16deg) scale(0.9, 1.12); box-shadow: 0 0 55px 20px var(--flame-glow); }
+  35%  { transform: rotate(14deg) scale(1.1, 0.88);  box-shadow: 0 0 20px 6px var(--flame-glow); }
+  55%  { transform: rotate(-12deg) scale(0.92, 1.1); box-shadow: 0 0 50px 18px var(--flame-glow); }
+  75%  { transform: rotate(10deg) scale(1.05, 0.95); box-shadow: 0 0 25px 8px var(--flame-glow); }
+  100% { transform: rotate(0deg) scale(1, 1);       box-shadow: 0 0 30px 10px var(--flame-glow); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sensor-flame span { animation: none; box-shadow: 0 0 40px 14px var(--flame-glow); }
+}
+.sensor-meaning { max-width: 28em; margin: 0 auto 0.6rem; opacity: 0.9; }
+.sensor-body { white-space: pre-wrap; overflow-wrap: anywhere; text-align: left; margin: 1rem 0; }
+.sensor-actions { display: grid; gap: 0.6rem; }
+.sensor-actions button { width: 100%; }
+.extend-form { margin: 0 0 0.6rem; }
+.extend-form button { width: auto; }

@@ -62,5 +62,38 @@ DANGER_WORDS = [
 ]
 
 
+# 強い響きの言葉（危険の気配ではない）。届ける前に、女神の灯が揺れる確認を1回出す。
+# AI は使わない。「死ね」など危険の気配の言葉は DANGER_WORDS のほうで扱う
+STRONG_WORDS = [
+    "ふざけんな",
+    "ふざけるな",
+    "はぁ？",
+    "はあ？",
+    "はぁ?",
+    "はあ?",
+    "うるさい",
+    "うざい",
+    "ウザい",
+    "バカ",
+    "ばか",
+    "馬鹿",
+    "アホ",
+    "あほ",
+    "クソ",
+    "くそ",
+    "黙れ",
+    "いい加減にしろ",
+    "勝手にしろ",
+    "どうでもいい",
+    "最低",
+    "大嫌い",
+]
+
+
+def has_strong_words(text: str) -> bool:
+    """強い響きの言葉を含むか。危険の気配の言葉を含むときは、ここでは確認しない"""
+    return not has_danger_words(text) and any(word in text for word in STRONG_WORDS)
+
+
 def has_danger_words(text: str) -> bool:
     return any(word in text for word in DANGER_WORDS)
