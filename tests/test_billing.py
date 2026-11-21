@@ -402,3 +402,9 @@ def test_unpaid_subscription_blocks_new_checkout(aoi, hikaru, login_as, fake_pay
     db.session.commit()
     login_as(aoi).post("/billing/checkout/pair")
     assert fake_payment.created == []
+
+
+def test_plan_page_explains_when_mirror_counts_reset(aoi, hikaru, login_as):
+    html = login_as(aoi).get("/billing").get_data(as_text=True)
+    assert "毎月1日に戻ります" in html
+    assert "持ち越せません" in html
