@@ -151,7 +151,7 @@ body.in-shrine.theme-morning { background: #fbf6ea; }
 .stage.intro .lights { animation: lights 7s ease both; }
 @keyframes approach {
   0% { transform: scale(0.35); filter: brightness(0.5); }
-  100% { transform: scale(1); filter: brightness(1); }
+  100% { transform: scale(1); filter: none; }
 }
 @keyframes appear {
   0%, 45% { opacity: 0; }
@@ -175,13 +175,14 @@ body.in-shrine.theme-morning { background: #fbf6ea; }
 }
 @keyframes approach-photo {
   0% { transform: scale(1); filter: brightness(0.12); }
-  100% { transform: scale(1.06); filter: brightness(1); }
+  100% { transform: scale(1.06); filter: none; }
 }
-/* 女神は、ぼかしから、ふわっと浮かんで出てくる（トップの lp-emerge と同じ） */
+/* 女神は、ふわっと浮かんで出てくる（トップの lp-emerge と同じ）。
+   動くぼかしのフィルターは使わない（Safari で、画像の端に色のついた縦線が出るため） */
 .theme-night .stage.intro .goddess { animation: emerge-night 8.4s ease both; }
 @keyframes emerge-night {
-  0%, 40% { opacity: 0; transform: translate(-50%, 8%); filter: blur(6px) drop-shadow(0 0 18px rgba(255, 170, 80, 0.35)) brightness(0.9); }
-  100% { opacity: 1; transform: translate(-50%, 0); filter: blur(0) drop-shadow(0 0 18px rgba(255, 170, 80, 0.35)) brightness(0.9); }
+  0%, 40% { opacity: 0; transform: translate(-50%, 8%); }
+  100% { opacity: 1; transform: translate(-50%, 0); }
 }
 .theme-night .stage.intro .lights { animation: lights 9s ease both; }
 /* 暗闇の幕：はじめは真っ暗で、ゆっくり消えて、神殿が浮かび上がる。
@@ -303,7 +304,7 @@ body.landing .site-footer a { color: var(--pico-muted-color); }
 }
 @keyframes lp-approach {
   0% { transform: scale(0.42); filter: brightness(0.35); }
-  100% { transform: scale(1); filter: brightness(1); }
+  100% { transform: scale(1); filter: none; }
 }
 .lp-temple {
   position: absolute;
@@ -631,8 +632,8 @@ body.in-shrine.theme-night { overflow-x: clip; }
 }
 /* 神殿の奥から、ふわりと浮かび上がる */
 @keyframes lp-emerge {
-  0%, 40% { opacity: 0; transform: translate(-50%, 8%); filter: blur(6px) drop-shadow(0 0 22px rgba(255, 170, 80, 0.4)) brightness(0.92); }
-  100% { opacity: 1; transform: translate(-50%, 0); filter: blur(0) drop-shadow(0 0 22px rgba(255, 170, 80, 0.4)) brightness(0.92); }
+  0%, 40% { opacity: 0; transform: translate(-50%, 8%); }
+  100% { opacity: 1; transform: translate(-50%, 0); }
 }
 @media (max-width: 600px) {
   .lp-scene.with-photo .lp-goddess { height: 28%; bottom: calc(100% - var(--temple-base)); }
@@ -1089,7 +1090,7 @@ body.learn {
 .lp-scene.with-photo { animation-name: lp-approach-photo; }
 @keyframes lp-approach-photo {
   0% { transform: scale(1); filter: brightness(0.12); }
-  100% { transform: scale(1.06); filter: brightness(1); }
+  100% { transform: scale(1.06); filter: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .lp-scene.with-photo { animation: none; }
@@ -1132,7 +1133,6 @@ body.landing:not(.about) .lp-scroll { animation-delay: 6s; }
 .theme-night .tool h3, .theme-night .mirror-card h3, .theme-night .lamp-card h3 { color: var(--gold); }
 /* 長い言葉や URL で、横にはみ出さない */
 main, .pleas p, .mirror-text, .lamp-text { overflow-wrap: anywhere; }
-img, svg, video { max-width: 100%; height: auto; }
 .tool .tool-what { font-size: 0.95rem; line-height: 1.6; }
 .tool .tool-hint { margin-top: 0.3rem; font-size: 0.85rem; opacity: 0.85; }
 
@@ -1171,3 +1171,15 @@ img, svg, video { max-width: 100%; height: auto; }
 .sensor-actions button { width: 100%; }
 .extend-form { margin: 0 0 0.6rem; }
 .extend-form button { width: auto; }
+
+/* Safari：女神の画像の端に、色のついた線が出ないようにする */
+.lp-goddess img, .goddess img, .goddess-cut {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* トップの女神：フィルターの重なりを減らす（Safari の描画の線を避けるため）。像の画像にだけかける */
+.lp-goddess, .lp-scene.with-photo .lp-goddess { filter: none; }
+.lp-goddess img.goddess-cut {
+  filter: sepia(0.55) saturate(1.3) brightness(0.85) contrast(1.15) drop-shadow(0 0 22px rgba(255, 170, 80, 0.4));
+}
