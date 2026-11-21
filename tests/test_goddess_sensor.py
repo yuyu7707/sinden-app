@@ -92,10 +92,11 @@ def test_extend_once_adds_one_turn_and_keeps_draft(aoi, hikaru, login_as):
     speaker.post(f"/shrine/{visit.id}/extend")
     db.session.refresh(visit)
     assert visit.turn_started_at == before + timedelta(seconds=300)
-    # 聴く側に「言葉を探しています」と出る
-    assert "言葉を探しています" in listener.get(f"/shrine/{visit.id}").get_data(
-        as_text=True
-    )
+    # 聴く側に、目立つ枠で知らせる
+    page = listener.get(f"/shrine/{visit.id}").get_data(as_text=True)
+    assert "5分延長しました" in page
+    assert "ことばを探しています" in page
+    assert "waiting-note" in page
 
 
 def test_extend_is_only_for_speaker(aoi, hikaru, login_as):

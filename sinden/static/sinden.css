@@ -1183,3 +1183,20 @@ main, .pleas p, .mirror-text, .lamp-text { overflow-wrap: anywhere; }
 .lp-goddess img.goddess-cut {
   filter: sepia(0.55) saturate(1.3) brightness(0.85) contrast(1.15) drop-shadow(0 0 22px rgba(255, 170, 80, 0.4));
 }
+
+/* 相手が「もう少し、待ってください」を押したとき、聴く側に出す枠 */
+.waiting-note {
+  display: flex; align-items: center; gap: 0.9rem;
+  margin: 0.8rem 0; padding: 0.8rem 1rem;
+  border: 1.5px solid var(--gold); border-radius: 10px;
+  background: rgba(217, 163, 91, 0.12);
+  box-shadow: 0 0 14px rgba(255, 170, 80, 0.25);
+}
+.waiting-note p { margin: 0; line-height: 1.6; }
+.waiting-flame {
+  flex: none; width: 18px; height: 26px; border-radius: 50% 50% 50% 50% / 62% 62% 38% 38%;
+  background: radial-gradient(circle at 50% 75%, #fff6d0, var(--flame) 55%, #e0742a);
+  box-shadow: 0 0 16px 5px var(--flame-glow);
+  animation: flicker 2.4s infinite ease-in-out;
+}
+@media (prefers-reduced-motion: reduce) { .waiting-flame { animation: none; } }

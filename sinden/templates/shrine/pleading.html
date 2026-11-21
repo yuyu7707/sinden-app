@@ -136,7 +136,10 @@
   <h2>いまは聴く番です</h2>
   <p class="presence">{{ partner.name }}さんが女神に訴えています。話し終わるまで、黙って聴きましょう。</p>
   {% if visit.turn_extended %}
-    <p class="presence"><small>{{ partner.name }}さんは、言葉を探しています。</small></p>
+    <div class="waiting-note" role="status">
+      <span class="waiting-flame" aria-hidden="true"></span>
+      <p><strong>{{ partner.name }}さんは5分延長しました。</strong><br>ことばを探しています。</p>
+    </div>
   {% endif %}
   <p class="timer">残り <span id="timer" data-remaining="{{ remaining }}" data-passive="1">{{ remaining // 60 }}:{{ '%02d' % (remaining % 60) }}</span></p>
 {% endif %}
