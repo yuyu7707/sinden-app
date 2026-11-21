@@ -151,6 +151,11 @@ class Theme:
     MORNING = "morning"
     LABELS: ClassVar[dict[str, str]] = {NIGHT: "夜の祠", MORNING: "ローマの朝"}
 
+    @classmethod
+    def for_time(cls, at: datetime) -> str:
+        """日本時間の時刻から決める。18:00〜翌5:00 は夜、5:00〜18:00 は朝"""
+        return cls.MORNING if 5 <= at.hour < 18 else cls.NIGHT
+
 
 class Visit(db.Model):
     """祠への1回の訪問（1回の喧嘩）"""

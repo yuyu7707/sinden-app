@@ -134,11 +134,7 @@ def invite():
     if visit is not None:
         db.session.rollback()
         return back(visit)
-    theme = form.theme.data
-    if theme == Theme.MORNING and not current_user.pair.is_premium:
-        db.session.rollback()
-        flash("ローマの朝の祠は、どちらかがプランに入ると選べます")
-        return redirect(url_for("billing.index"))
+    theme = Theme.for_time(now())
     visit = Visit(
         pair=current_user.pair,
         inviter=current_user,

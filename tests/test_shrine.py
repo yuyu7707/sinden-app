@@ -5,10 +5,10 @@ from sinden.models import MirrorUse, Plea, Visit, VisitStatus, now
 from sinden.services.ai import AIError
 
 
-def open_shrine(aoi, hikaru, login_as, theme="night"):
+def open_shrine(aoi, hikaru, login_as):
     """あおいが誘い、ひかるが応じ、ふたりとも掟に従うところまで進める"""
     a, h = login_as(aoi), login_as(hikaru)
-    a.post("/shrine/invite", data={"theme": theme})
+    a.post("/shrine/invite")
     visit = db.session.scalar(db.select(Visit))
     h.post(f"/shrine/{visit.id}/accept")
     a.post(f"/shrine/{visit.id}/agree")
@@ -224,17 +224,53 @@ def test_one_no_deletes_pleas(aoi, hikaru, login_as):
     assert a.get(f"/records/{visit.id}").status_code == 404
 
 
-def test_morning_theme_requires_premium(aoi, hikaru, login_as):
+def test_theme_is_chosen_by_time():
+    from datetime import datetime
+
+    from sinden.models import Theme
+
+    for hour, expected in [
+        (4, "night"),
+        (5, "morning"),
+        (17, "morning"),
+        (18, "night"),
+        (23, "night"),
+        (0, "night"),
+    ]:
+        assert Theme.for_time(datetime(2026, 11, 21, hour, 30)) == expected
+
+
+def test_invite_at_noon_is_morning_and_free(aoi, hikaru, login_as, monkeypatch):
+    from datetime import datetime
+
+    monkeypatch.setattr(
+        "sinden.views.shrine.now", lambda: datetime(2026, 11, 21, 12, 0)
+    )
     a = login_as(aoi)
-    res = a.post("/shrine/invite", data={"theme": "morning"})
-    assert res.headers["Location"].endswith("/billing")
-    assert db.session.scalar(db.select(Visit)) is None
-
-
-def test_morning_theme_with_premium(aoi, hikaru, login_as, premium):
-    visit, a, _h = open_shrine(aoi, hikaru, login_as, theme="morning")
+    a.post("/shrine/invite")
+    visit = db.session.scalar(db.select(Visit))
     assert visit.theme == "morning"
     assert "ローマの朝" in a.get(f"/shrine/{visit.id}").get_data(as_text=True)
+
+
+def test_invite_at_night_is_night(aoi, hikaru, login_as, monkeypatch):
+    from datetime import datetime
+
+    monkeypatch.setattr(
+        "sinden.views.shrine.now", lambda: datetime(2026, 11, 21, 22, 0)
+    )
+    login_as(aoi).post("/shrine/invite")
+    assert db.session.scalar(db.select(Visit)).theme == "night"
+
+
+def test_invite_ignores_theme_sent_by_client(aoi, hikaru, login_as, monkeypatch):
+    from datetime import datetime
+
+    monkeypatch.setattr(
+        "sinden.views.shrine.now", lambda: datetime(2026, 11, 21, 22, 0)
+    )
+    login_as(aoi).post("/shrine/invite", data={"theme": "morning"})
+    assert db.session.scalar(db.select(Visit)).theme == "night"
 
 
 def test_cancel_invitation(aoi, hikaru, login_as):

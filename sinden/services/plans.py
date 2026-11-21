@@ -1,7 +1,7 @@
 """無料と有料の違いを決めるところ。数はすべて config から取る。
 
 - 本人だけの機能（女神の鏡・声・学び・手紙を書く）：User.is_premium
-- ふたりで共有する機能（ローマの朝・記録の振り返り）：Pair.is_premium
+- ふたりで共有する機能（記録の振り返り）：Pair.is_premium
 """
 
 from datetime import datetime
