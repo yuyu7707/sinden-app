@@ -38,6 +38,7 @@ def create_app(config=None):
         PRICE_PAIR=int(os.environ.get("PRICE_PAIR", "800")),
         # 1回の訴えの持ち時間（秒）。途中で自分から終えてもよい
         TURN_SECONDS=300,
+        INVITE_EXPIRE_HOURS=24,
         # 訴えの最大文字数（5分で話せる量より少し多め）
         PLEA_MAX_CHARS=3000,
         # 女神の鏡を1人が月に使える回数。プランの30回は、3日に1回喧嘩しても足りる量。

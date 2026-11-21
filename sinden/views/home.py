@@ -1,9 +1,27 @@
-from flask import Blueprint, flash, jsonify, redirect, render_template, url_for
+from datetime import timedelta
+
+from flask import (
+    Blueprint,
+    current_app,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    url_for,
+)
 from flask_login import current_user, login_required
 
 from sinden.extensions import db
 from sinden.forms import InviteForm, JoinPairForm
-from sinden.models import Letter, Pair, User, Visit, VisitStatus, new_invite_code
+from sinden.models import (
+    Letter,
+    Pair,
+    User,
+    Visit,
+    VisitStatus,
+    new_invite_code,
+    now,
+)
 from sinden.services import plans
 from sinden.services.safety import HELP_LINES
 
@@ -44,14 +62,30 @@ def manifest():
     return res
 
 
+def expire_stale_invite(visit: Visit) -> bool:
+    """誘ってから INVITE_EXPIRE_HOURS 時間たっても応じられない誘いは、静かに取り消す"""
+    if visit.status != VisitStatus.INVITED:
+        return False
+    limit = timedelta(hours=current_app.config["INVITE_EXPIRE_HOURS"])
+    if now() - visit.created_at <= limit:
+        return False
+    visit.status = VisitStatus.CANCELLED
+    visit.ended_at = now()
+    db.session.commit()
+    return True
+
+
 def active_visit(pair: Pair | None) -> Visit | None:
     if pair is None:
         return None
-    return db.session.scalar(
+    visit = db.session.scalar(
         db.select(Visit)
         .where(Visit.pair_id == pair.id, Visit.status.in_(VisitStatus.ACTIVE))
         .order_by(Visit.id.desc())
     )
+    if visit is not None and expire_stale_invite(visit):
+        return None
+    return visit
 
 
 def home_version(user) -> str:

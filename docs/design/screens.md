@@ -42,7 +42,7 @@ S5〜S8 は同じ URL で、祠の状態（`Visit.status`）によってテン�
 | `/pair/create` | POST | ペアのない人 | 招待コードを作る |
 | `/pair/join` | POST | ペアのない人 | 招待コードでペアになる（2人そろったペアには入れない） |
 | `/shrine/invite` | POST | ペアのメンバー | 祠に誘う（版は誘った時刻で自動に決まる。18:00〜翌5:00 は夜、5:00〜18:00 は朝。どちらも無料） |
-| `/shrine/<id>/accept` | POST | 誘われた人 | 応じる（invited → rules） |
+| `/shrine/<id>/accept` | POST | 誘われた人 | 応じる（invited → rules）。誘って24時間たった誘いは、取り消し（cancelled）になっていて応じられない |
 | `/shrine/<id>/cancel` | POST | ペアの2人 | 誘いを取り消す／見送る（invited → cancelled） |
 | `/shrine/<id>/agree` | POST | ペアの2人 | 掟に従う。ふたりそろうと訴え始め（誘われた側から） |
 | `/shrine/<id>/reflect` | POST | **話す番の人だけ** | ことばを確かめる。鏡と灯を作り、下書きに置く（相手には届かない。1回の番で1回まで） |

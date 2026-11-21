@@ -379,3 +379,49 @@ def test_no_lamp_when_danger_words(aoi, hikaru, login_as):
     db.session.refresh(visit)
     assert visit.draft_danger
     assert visit.draft_lamp is None
+
+
+def test_stale_invite_is_cancelled_quietly(aoi, hikaru, login_as, app):
+    a = login_as(aoi)
+    a.post("/shrine/invite")
+    visit = db.session.scalar(db.select(Visit))
+    visit.created_at = now() - timedelta(hours=25)
+    db.session.commit()
+    h = login_as(hikaru)
+    res = h.get("/")
+    assert "誘っています" not in res.get_data(as_text=True)
+    db.session.refresh(visit)
+    assert visit.status == VisitStatus.CANCELLED
+
+
+def test_cannot_accept_stale_invite(aoi, hikaru, login_as):
+    a = login_as(aoi)
+    a.post("/shrine/invite")
+    visit = db.session.scalar(db.select(Visit))
+    visit.created_at = now() - timedelta(hours=25)
+    db.session.commit()
+    res = login_as(hikaru).post(f"/shrine/{visit.id}/accept")
+    assert res.status_code == 302
+    db.session.refresh(visit)
+    assert visit.status == VisitStatus.CANCELLED
+
+
+def test_fresh_invite_can_still_be_accepted(aoi, hikaru, login_as):
+    a = login_as(aoi)
+    a.post("/shrine/invite")
+    visit = db.session.scalar(db.select(Visit))
+    visit.created_at = now() - timedelta(hours=23)
+    db.session.commit()
+    login_as(hikaru).post(f"/shrine/{visit.id}/accept")
+    db.session.refresh(visit)
+    assert visit.status == VisitStatus.RULES
+
+
+def test_share_button_only_for_inviter_and_has_no_secrets(aoi, hikaru, login_as):
+    a = login_as(aoi)
+    a.post("/shrine/invite")
+    visit = db.session.scalar(db.select(Visit))
+    mine = a.get(f"/shrine/{visit.id}").get_data(as_text=True)
+    assert "data-share" in mine
+    theirs = login_as(hikaru).get(f"/shrine/{visit.id}").get_data(as_text=True)
+    assert "data-share" not in theirs

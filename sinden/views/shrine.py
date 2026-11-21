@@ -23,7 +23,7 @@ from sinden.models import Pair, Plea, Theme, Visit, VisitStatus, now
 from sinden.services import plans
 from sinden.services.ai import AIError
 from sinden.services.safety import HELP_LINES, has_danger_words
-from sinden.views.home import active_visit
+from sinden.views.home import active_visit, expire_stale_invite
 
 bp = Blueprint("shrine", __name__, url_prefix="/shrine")
 
@@ -158,6 +158,9 @@ def show(visit_id):
             return redirect(url_for("records.show", visit_id=visit.id))
         flash("祠を後にしました。今回の訴えは残していません")
         return redirect(url_for("home.index"))
+    if expire_stale_invite(visit):
+        flash("この誘いは、時間がたったので取り消されました")
+        return redirect(url_for("home.index"))
     expire_turn_if_away(visit)
     current_user.last_seen = now()
     db.session.commit()
@@ -213,6 +216,11 @@ def state(visit_id):
 @pair_required
 def accept(visit_id):
     visit = get_locked_visit(visit_id)
+    if expire_stale_invite(visit):
+        flash(
+            "この誘いは、時間がたったので取り消されました。もう一度誘ってもらってください"
+        )
+        return redirect(url_for("home.index"))
     if visit.status == VisitStatus.INVITED and visit.invitee_id == current_user.id:
         visit.status = VisitStatus.RULES
         db.session.commit()
