@@ -134,3 +134,13 @@ def test_away_notice_is_shown(aoi, hikaru, login_as):
     speaker, _ = speaker_and_listener(visit, aoi, a, h)
     html = speaker.get(f"/shrine/{visit.id}").get_data(as_text=True)
     assert "席を外しているようです" in html or "隣で聴いています" in html
+
+
+def test_flame_screen_explains_its_meaning(aoi, hikaru, login_as):
+    visit, a, h = open_shrine(aoi, hikaru, login_as)
+    speaker, _ = speaker_and_listener(visit, aoi, a, h)
+    html = speaker.post(
+        f"/shrine/{visit.id}/plea", data={"body": "ふざけんな"}
+    ).get_data(as_text=True)
+    assert "気づいたしるし" in html
+    assert "よい・悪いを決めるものではありません" in html
