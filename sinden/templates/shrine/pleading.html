@@ -59,6 +59,12 @@
         {% endif %}
         <button type="submit" class="secondary outline">このまま届ける</button>
       </div>
+      <div class="reactions">
+        <p><small>言葉にならないときは、決まったことばを送れます（AI は使いません）。</small></p>
+        {% for key, phrase in reactions.items() %}
+          <button type="submit" class="secondary outline small" formaction="{{ url_for('shrine.react', visit_id=visit.id) }}" name="key" value="{{ key }}" formnovalidate>{{ phrase }}</button>
+        {% endfor %}
+      </div>
       <div class="check-note">
         <p><small>「ことばを確かめる」を押すと、相手に届ける前に、<strong>あなたにだけ</strong>次の2つが出ます。</small></p>
         <ul>
@@ -121,7 +127,7 @@
   <h3>祠に響いた言葉</h3>
   <ol class="pleas">
     {% for p in visit.pleas %}
-      <li class="{% if p.user_id == current_user.id %}mine{% else %}theirs{% endif %}">
+      <li class="{% if p.user_id == current_user.id %}mine{% else %}theirs{% endif %}{% if p.source == 'reaction' %} reaction{% endif %}">
         <small>{{ p.user.name }}</small>
         <p>{{ p.body }}</p>
       </li>

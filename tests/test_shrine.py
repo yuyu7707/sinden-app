@@ -425,3 +425,38 @@ def test_share_button_only_for_inviter_and_has_no_secrets(aoi, hikaru, login_as)
     assert "data-share" in mine
     theirs = login_as(hikaru).get(f"/shrine/{visit.id}").get_data(as_text=True)
     assert "data-share" not in theirs
+
+
+def test_reaction_is_sent_and_passes_turn(aoi, hikaru, login_as, fake_ai):
+    visit, a, h = open_shrine(aoi, hikaru, login_as)
+    speaker = a if visit.current_speaker_id == aoi.id else h
+    res = speaker.post(f"/shrine/{visit.id}/react", data={"key": "speechless"})
+    assert res.status_code == 302
+    db.session.refresh(visit)
+    plea = visit.pleas[0]
+    assert plea.body == "いまは言葉にならない"
+    assert plea.source == "reaction"
+    assert visit.current_speaker_id != plea.user_id
+    # AI も鏡の回数も使わない
+    assert db.session.scalar(db.select(db.func.count(MirrorUse.id))) == 0
+
+
+def test_reaction_rejects_unknown_key_and_free_text(aoi, hikaru, login_as):
+    visit, a, h = open_shrine(aoi, hikaru, login_as)
+    speaker = a if visit.current_speaker_id == aoi.id else h
+    assert (
+        speaker.post(
+            f"/shrine/{visit.id}/react", data={"key": "ふざけんな"}
+        ).status_code
+        == 400
+    )
+    assert speaker.post(f"/shrine/{visit.id}/react", data={}).status_code == 400
+    assert not visit.pleas
+
+
+def test_reaction_only_by_speaker(aoi, hikaru, login_as):
+    visit, a, h = open_shrine(aoi, hikaru, login_as)
+    listener = h if visit.current_speaker_id == aoi.id else a
+    listener.post(f"/shrine/{visit.id}/react", data={"key": "heard"})
+    db.session.refresh(visit)
+    assert not visit.pleas

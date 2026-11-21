@@ -16,6 +16,7 @@ from flask import (
 from flask_login import current_user
 from sqlalchemy.orm.attributes import flag_modified
 
+from sinden.content import REACTIONS
 from sinden.decorators import pair_required
 from sinden.extensions import db
 from sinden.forms import InviteForm, PleaForm
@@ -182,6 +183,7 @@ def show(visit_id):
         partner_present=is_present(partner),
         my_last=my_last,
         form=PleaForm(),
+        reactions=REACTIONS,
         help_lines=HELP_LINES,
         # 祠に入ったとき（掟の確認）だけ、近づいていく演出を見せる
         intro=visit.status == VisitStatus.RULES,
@@ -373,6 +375,39 @@ def plea(visit_id):
             mirror_note=visit.draft_note if has_draft else None,
             danger=(has_draft and visit.draft_danger) or has_danger_words(body),
             source=source,
+        )
+    )
+    pass_turn(visit)
+    db.session.commit()
+    return back(visit)
+
+
+@bp.route("/<int:visit_id>/react", methods=["POST"])
+@pair_required
+def react(visit_id):
+    """言葉にならないときの、決まったリアクション。AI は使わず、鏡の回数にも数えない"""
+    visit = get_locked_visit(visit_id)
+    if visit.status != VisitStatus.PLEADING:
+        db.session.rollback()
+        return back(visit)
+    if visit.current_speaker_id != current_user.id:
+        db.session.rollback()
+        flash("いまは聴く番です")
+        return back(visit)
+    form = PleaForm()
+    if not form.validate_on_submit():
+        abort(400)
+    # ことばは、フォームから受け取らず、サーバーの決まりから選ぶ
+    phrase = REACTIONS.get(request.form.get("key", ""))
+    if phrase is None:
+        abort(400)
+    db.session.add(
+        Plea(
+            visit=visit,
+            user=current_user,
+            seq=len(visit.pleas) + 1,
+            body=phrase,
+            source="reaction",
         )
     )
     pass_turn(visit)

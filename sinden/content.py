@@ -4,6 +4,15 @@ free が True の記事は無料で読める。それ以外はプランで読め
 各セクションは heading（見出し）、paragraphs（段落）、examples（例：[(よくない例, よい例)]）を持つ。
 """
 
+# 言葉にならないときに、自分の番で送れる決まったことば（AI は使わない）
+REACTIONS = {
+    "heard": "聴いたよ",
+    "speechless": "いまは言葉にならない",
+    "sad": "悲しい",
+    "frustrated": "悔しい",
+    "rest": "少し休みたい",
+}
+
 ARTICLES = [
     {
         "slug": "assertion",
