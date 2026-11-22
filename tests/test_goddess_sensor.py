@@ -152,8 +152,9 @@ def test_reflect_button_and_waiting_notice_are_present(aoi, hikaru, login_as):
     speaker, _ = speaker_and_listener(visit, aoi, a, h)
     html = speaker.get(f"/shrine/{visit.id}").get_data(as_text=True)
     assert "data-reflect" in html
-    assert "data-mirror-waiting" in html
-    assert "女神の鏡に、映しています" in html
+    # 押したらすぐに出る、鏡の映像（鏡の中に「映しています…」）
+    assert "data-mirror-waiting" in html and "mirror-stage" in html
+    assert "映しています" in html
     assert speaker.get("/static/mirror.js").status_code == 200
 
 
@@ -162,15 +163,16 @@ def test_mirror_card_is_shown_after_reflect(aoi, hikaru, login_as, fake_ai):
     speaker, _ = speaker_and_listener(visit, aoi, a, h)
     speaker.post(f"/shrine/{visit.id}/reflect", data={"body": "遅くて不安だった"})
     html = speaker.get(f"/shrine/{visit.id}").get_data(as_text=True)
-    assert "mirror-card" in html and "mirror-text" in html
+    # 文字は、鏡の中（ガラスの面）に出る
+    assert "mirror-glass" in html and "mirror-text" in html
 
 
-def test_lamp_text_opens_like_a_book_and_keeps_text(aoi, hikaru, login_as, fake_ai):
+def test_lamp_text_is_inside_the_book_and_keeps_text(aoi, hikaru, login_as, fake_ai):
     visit, a, h = open_shrine(aoi, hikaru, login_as)
     speaker, _ = speaker_and_listener(visit, aoi, a, h)
     speaker.post(f"/shrine/{visit.id}/reflect", data={"body": "遅くて不安だった"})
     html = speaker.get(f"/shrine/{visit.id}").get_data(as_text=True)
-    assert "lamp-book" in html and "lamp-cover-left" in html and "lamp-line" in html
+    assert "lamp-stage" in html and "lamp-pagetext" in html and "lamp-line" in html
     assert "灯：遅くて不安だった" in html
 
 
@@ -187,12 +189,8 @@ def test_mirror_and_lamp_animations_keep_the_text(aoi, hikaru, login_as, fake_ai
     speaker, _ = speaker_and_listener(visit, aoi, a, h)
     speaker.post(f"/shrine/{visit.id}/reflect", data={"body": "遅くて不安だった"})
     html = speaker.get(f"/shrine/{visit.id}").get_data(as_text=True)
-    assert (
-        html.count("mirror-glow") == 3
-        and "mirror-fog" in html
-        and "mirror-spark" in html
-    )
-    assert html.count("lamp-page") == 5
+    assert "mirror-fog" in html
+    assert html.count("art-page") >= 5
     # 飾りがあっても、本文は消えない
     assert "鏡：遅くて不安だっ" in html and "灯：遅くて不安だった" in html
 
@@ -202,7 +200,6 @@ def test_mirror_and_lamp_illustrations_are_shown(aoi, hikaru, login_as, fake_ai)
     speaker, _ = speaker_and_listener(visit, aoi, a, h)
     speaker.post(f"/shrine/{visit.id}/reflect", data={"body": "遅くて不安だった"})
     html = speaker.get(f"/shrine/{visit.id}").get_data(as_text=True)
-    assert 'class="art-mirror"' in html and "art-ghost" in html
-    assert 'class="art-lamp"' in html and html.count("art-page") >= 3
-    # 絵があっても、本文は消えない
-    assert "鏡：遅くて不安だっ" in html and "灯：遅くて不安だった" in html
+    assert 'class="art-mirror"' in html
+    assert 'class="art-lamp"' in html
+    assert "fit-box" in html
