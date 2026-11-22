@@ -203,3 +203,25 @@ def test_mirror_and_lamp_illustrations_are_shown(aoi, hikaru, login_as, fake_ai)
     assert 'class="art-mirror"' in html
     assert 'class="art-lamp"' in html
     assert "fit-box" in html
+
+
+def test_delivered_words_are_shown_as_chat_bubbles_for_both(aoi, hikaru, login_as):
+    visit, a, h = open_shrine(aoi, hikaru, login_as)
+    speaker, listener = speaker_and_listener(visit, aoi, a, h)
+    speaker.post(f"/shrine/{visit.id}/plea", data={"body": "遅くて不安だった"})
+    mine = speaker.get(f"/shrine/{visit.id}").get_data(as_text=True)
+    theirs = listener.get(f"/shrine/{visit.id}").get_data(as_text=True)
+    assert 'class="pleas bubbles"' in mine and 'class="pleas bubbles"' in theirs
+    # 書いた本人には「あなた」、相手には名前で、同じ言葉が見える
+    assert "遅くて不安だった" in mine and "遅くて不安だった" in theirs
+    assert 'class="bubble-name">あなた' in mine
+    assert 'class="bubble-name">あなた' not in theirs
+
+
+def test_bubbles_do_not_leak_mirror_or_lamp(aoi, hikaru, login_as, fake_ai):
+    visit, a, h = open_shrine(aoi, hikaru, login_as)
+    speaker, listener = speaker_and_listener(visit, aoi, a, h)
+    speaker.post(f"/shrine/{visit.id}/reflect", data={"body": "遅くて不安だった"})
+    speaker.post(f"/shrine/{visit.id}/plea", data={"body": "遅くて不安だった"})
+    theirs = listener.get(f"/shrine/{visit.id}").get_data(as_text=True)
+    assert "鏡：" not in theirs and "灯：" not in theirs
