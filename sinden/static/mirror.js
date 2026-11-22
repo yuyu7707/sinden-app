@@ -5,8 +5,10 @@
   const fit = (box) => {
     box.style.fontSize = "";
     let size = parseFloat(getComputedStyle(box).fontSize);
-    const min = 11;
-    while (box.scrollHeight > box.clientHeight + 1 && size > min) {
+    const min = 14;
+    // 飾り（霧や光）の大きさは数えず、文字そのものの高さで、はみ出しを測る
+    const text = box.querySelector(".mirror-text, .lamp-text") || box;
+    while (text.getBoundingClientRect().height > box.clientHeight + 1 && size > min) {
       size -= 0.5;
       box.style.fontSize = size + "px";
     }
