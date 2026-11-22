@@ -180,3 +180,18 @@ def test_reflect_button_is_the_main_call_to_action(aoi, hikaru, login_as):
     html = speaker.get(f"/shrine/{visit.id}").get_data(as_text=True)
     assert 'class="reflect-cta"' in html
     assert "「女神の鏡」と、「ことばの灯」で確かめる" in html
+
+
+def test_mirror_and_lamp_animations_keep_the_text(aoi, hikaru, login_as, fake_ai):
+    visit, a, h = open_shrine(aoi, hikaru, login_as)
+    speaker, _ = speaker_and_listener(visit, aoi, a, h)
+    speaker.post(f"/shrine/{visit.id}/reflect", data={"body": "遅くて不安だった"})
+    html = speaker.get(f"/shrine/{visit.id}").get_data(as_text=True)
+    assert (
+        html.count("mirror-glow") == 3
+        and "mirror-fog" in html
+        and "mirror-spark" in html
+    )
+    assert html.count("lamp-page") == 5
+    # 飾りがあっても、本文は消えない
+    assert "鏡：遅くて不安だっ" in html and "灯：遅くて不安だった" in html

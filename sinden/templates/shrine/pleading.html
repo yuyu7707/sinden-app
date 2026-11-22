@@ -98,6 +98,15 @@
     {# ② 映したあと：あなたにだけ見える。届ける言葉を選ぶ #}
     <div class="reflection">
       <section class="mirror-card">
+        {# 息で曇った鏡が晴れて、光の輪がほわほわと広がり、光の粒がきらめく #}
+        <span class="mirror-fx mirror-glow" style="--d: 0.2s" aria-hidden="true"></span>
+        <span class="mirror-fx mirror-glow" style="--d: 0.7s" aria-hidden="true"></span>
+        <span class="mirror-fx mirror-glow" style="--d: 1.2s" aria-hidden="true"></span>
+        <span class="mirror-fx mirror-spark" style="--x: 14%; --y: 30%; --d: 1.3s" aria-hidden="true"></span>
+        <span class="mirror-fx mirror-spark" style="--x: 82%; --y: 22%; --d: 1.6s" aria-hidden="true"></span>
+        <span class="mirror-fx mirror-spark" style="--x: 70%; --y: 78%; --d: 1.9s" aria-hidden="true"></span>
+        <span class="mirror-fx mirror-spark" style="--x: 24%; --y: 74%; --d: 2.2s" aria-hidden="true"></span>
+        <span class="mirror-fx mirror-fog" aria-hidden="true"></span>
         <h3>女神の鏡</h3>
         <p><small>あなたの訴えを、肯定も否定もせずに映し返しています。</small></p>
         {% if visit.draft_mirror %}
@@ -120,6 +129,12 @@
           <div class="lamp-book">
             <span class="lamp-cover lamp-cover-left" aria-hidden="true"></span>
             <span class="lamp-cover lamp-cover-right" aria-hidden="true"></span>
+            {# 古書のページが、パラパラとめくれる（最後に開いたページに、言葉が浮かぶ）。下のページから順に並べる #}
+            <span class="lamp-page" style="--p: 4" aria-hidden="true"></span>
+            <span class="lamp-page" style="--p: 3" aria-hidden="true"></span>
+            <span class="lamp-page" style="--p: 2" aria-hidden="true"></span>
+            <span class="lamp-page" style="--p: 1" aria-hidden="true"></span>
+            <span class="lamp-page" style="--p: 0" aria-hidden="true"></span>
             <p class="lamp-text">
               {%- for line in visit.draft_lamp.replace('。', '。\n').split('\n') if line.strip() -%}
                 <span class="lamp-line" style="--i: {{ loop.index0 }}">{{ line }}</span>

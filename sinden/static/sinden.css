@@ -1365,3 +1365,68 @@ button.reflect-cta:disabled { animation: none; opacity: 0.7; }
   .lp-sub { display: none; }
   .lp-actions { margin-top: 0.6rem; }
 }
+
+/* ===== 女神の鏡：「ほわほわほわ〜ん」（動くぼかしは使わない。透明度と大きさだけ） =====
+   飾りの基本の状態は「消えたあと」。動きが使えなくても、文字は隠れない */
+.mirror-card > h3, .mirror-card > p, .mirror-card .mirror-text { position: relative; z-index: 1; }
+.mirror-fx { position: absolute; pointer-events: none; }
+.mirror-fog {
+  inset: 0; z-index: 2; opacity: 0;
+  background:
+    radial-gradient(circle at 30% 35%, rgba(255, 255, 255, 0.95), transparent 60%),
+    radial-gradient(circle at 70% 65%, rgba(235, 241, 250, 0.9), transparent 65%),
+    rgba(225, 233, 245, 0.88);
+  animation: mirror-fog-clear 2.6s ease 0.1s both;
+}
+@keyframes mirror-fog-clear {
+  0% { opacity: 1; transform: scale(1); }
+  35% { opacity: 0.92; }
+  100% { opacity: 0; transform: scale(1.12); }
+}
+.mirror-glow {
+  left: 50%; top: 52%; width: 150px; height: 150px; margin: -75px 0 0 -75px;
+  z-index: 0; border-radius: 50%; opacity: 0;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, rgba(190, 206, 232, 0.55) 45%, transparent 70%);
+  animation: mirror-wawa 2.8s ease-out var(--d, 0s) both;
+}
+@keyframes mirror-wawa {
+  0% { transform: scale(0.15); opacity: 0; }
+  25% { opacity: 0.95; }
+  100% { transform: scale(3.2); opacity: 0; }
+}
+.mirror-spark {
+  left: var(--x); top: var(--y); width: 8px; height: 8px; z-index: 3; border-radius: 50%; opacity: 0;
+  background: #fff; box-shadow: 0 0 10px 4px rgba(190, 206, 232, 0.9);
+  animation: mirror-twinkle 1.6s ease-in-out var(--d, 0s) both;
+}
+@keyframes mirror-twinkle {
+  0% { opacity: 0; transform: scale(0.2); }
+  40% { opacity: 1; transform: scale(1.4); }
+  100% { opacity: 0; transform: scale(0.4); }
+}
+.mirror-card .mirror-text { animation: mirror-appear 1.8s ease 1.4s both; }
+
+/* ===== ことばの灯：古い本が開き、ページがパラパラとめくれ、開いたページに言葉が浮かぶ ===== */
+.lamp-book { min-height: 5.5rem; }
+.lamp-page {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  transform-origin: left center; transform: scaleX(0);
+  background:
+    repeating-linear-gradient(0deg, transparent 0 1.55rem, rgba(120, 80, 30, 0.14) 1.55rem calc(1.55rem + 1px)),
+    linear-gradient(90deg, #d9c08a 0%, #efe0b8 14%, #f5e9c8 60%, #e6d19c 100%);
+  box-shadow: inset 8px 0 14px -6px rgba(90, 55, 20, 0.45), 2px 0 8px rgba(60, 35, 10, 0.25);
+  animation: lamp-flip 0.34s ease-in calc(1.7s + var(--p, 0) * 0.3s) both;
+}
+@keyframes lamp-flip {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+/* 言葉は、ページがめくれ終わってから、浮かぶ */
+.lamp-line { animation-delay: calc(3.4s + var(--i, 0) * 0.55s); }
+.lamp-text { position: relative; z-index: 0; }
+.lamp-book { background: linear-gradient(90deg, #f1e3bf, #f8eed2 50%, #efe0b8); }
+.lamp-card { animation-delay: 3.3s; }
+@media (prefers-reduced-motion: reduce) {
+  .mirror-fx, .lamp-page, .lamp-cover { display: none; }
+  .mirror-card .mirror-text, .lamp-line, .lamp-card { animation: none; }
+}
