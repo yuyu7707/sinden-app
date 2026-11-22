@@ -6,9 +6,9 @@
     box.style.fontSize = "";
     let size = parseFloat(getComputedStyle(box).fontSize);
     const min = 14;
-    // 飾り（霧や光）の大きさは数えず、文字そのものの高さで、はみ出しを測る
+    // 飾り（霧や光）の大きさは数えず、文字そのものの高さで測る。浮き出る動き（拡大）の途中でも、本来の大きさで測れるよう、offsetHeight を使う
     const text = box.querySelector(".mirror-text, .lamp-text") || box;
-    while (text.getBoundingClientRect().height > box.clientHeight + 1 && size > min) {
+    while (text.offsetHeight > box.clientHeight + 1 && size > min) {
       size -= 0.5;
       box.style.fontSize = size + "px";
     }
