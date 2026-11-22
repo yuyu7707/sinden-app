@@ -82,9 +82,12 @@
         {% endif %}
         <button type="submit" class="secondary outline">このまま届ける</button>
       </div>
+      {# 押したらすぐに、鏡の映像が出る（返事が来ると、同じ形の鏡に、映した言葉が出る） #}
       <div class="mirror-waiting" data-mirror-waiting role="status" hidden>
-        <div class="mirror-pool" aria-hidden="true"><span></span><span></span><span></span></div>
-        <p>女神の鏡に、映しています…</p>
+        <div class="mirror-stage">
+          {% include "shrine/_art_mirror.html" %}
+          <div class="mirror-glass fit-box"><p class="mirror-text mirror-wait-text">女神の鏡に、<br>映しています…</p></div>
+        </div>
       </div>
       <div class="reactions">
         <p><small>言葉にならないときは、決まったことばを送れます（AI は使いません）。</small></p>
@@ -98,20 +101,17 @@
     {# ② 映したあと：あなたにだけ見える。届ける言葉を選ぶ #}
     <div class="reflection">
       <section class="mirror-card">
-        {# 息で曇った鏡が晴れて、光の輪がほわほわと広がり、光の粒がきらめく #}
-        <span class="mirror-fx mirror-glow" style="--d: 0.2s" aria-hidden="true"></span>
-        <span class="mirror-fx mirror-glow" style="--d: 0.7s" aria-hidden="true"></span>
-        <span class="mirror-fx mirror-glow" style="--d: 1.2s" aria-hidden="true"></span>
-        <span class="mirror-fx mirror-spark" style="--x: 14%; --y: 30%; --d: 1.3s" aria-hidden="true"></span>
-        <span class="mirror-fx mirror-spark" style="--x: 82%; --y: 22%; --d: 1.6s" aria-hidden="true"></span>
-        <span class="mirror-fx mirror-spark" style="--x: 70%; --y: 78%; --d: 1.9s" aria-hidden="true"></span>
-        <span class="mirror-fx mirror-spark" style="--x: 24%; --y: 74%; --d: 2.2s" aria-hidden="true"></span>
-        <span class="mirror-fx mirror-fog" aria-hidden="true"></span>
         <h3>女神の鏡</h3>
         <p><small>あなたの訴えを、肯定も否定もせずに映し返しています。</small></p>
-        {% include "shrine/_art_mirror.html" %}
         {% if visit.draft_mirror %}
-          <p class="mirror-text">{{ visit.draft_mirror }}</p>
+          {# 鏡の中に、映した言葉が出る #}
+          <div class="mirror-stage">
+            {% include "shrine/_art_mirror.html" %}
+            <div class="mirror-glass fit-box">
+              <span class="mirror-fog" aria-hidden="true"></span>
+              <p class="mirror-text">{{ visit.draft_mirror }}</p>
+            </div>
+          </div>
         {% elif visit.draft_note %}
           <p><small>{{ visit.draft_note }}</small></p>
           {% if offers_purchase(visit.draft_note) %}
@@ -126,22 +126,16 @@
         <section class="lamp-card">
           <h3><span class="lamp-flame" aria-hidden="true"></span>ことばの灯</h3>
           <p><small>あなたの気持ちはそのままに、相手に届きやすい言い方の案です。使うかどうかは、あなたが決めます。</small></p>
-          {% include "shrine/_art_lamp.html" %}
-          {# 本の表紙が開いて、やさしい言葉が、1行ずつ浮かんでくる #}
-          <div class="lamp-book">
-            <span class="lamp-cover lamp-cover-left" aria-hidden="true"></span>
-            <span class="lamp-cover lamp-cover-right" aria-hidden="true"></span>
-            {# 古書のページが、パラパラとめくれる（最後に開いたページに、言葉が浮かぶ）。下のページから順に並べる #}
-            <span class="lamp-page" style="--p: 4" aria-hidden="true"></span>
-            <span class="lamp-page" style="--p: 3" aria-hidden="true"></span>
-            <span class="lamp-page" style="--p: 2" aria-hidden="true"></span>
-            <span class="lamp-page" style="--p: 1" aria-hidden="true"></span>
-            <span class="lamp-page" style="--p: 0" aria-hidden="true"></span>
-            <p class="lamp-text">
-              {%- for line in visit.draft_lamp.replace('。', '。\n').split('\n') if line.strip() -%}
-                <span class="lamp-line" style="--i: {{ loop.index0 }}">{{ line }}</span>
-              {%- endfor -%}
-            </p>
+          {# 古書のページがめくれ、開いたページに、やさしい言葉が、1行ずつ浮かぶ #}
+          <div class="lamp-stage">
+            {% include "shrine/_art_lamp.html" %}
+            <div class="lamp-pagetext fit-box">
+              <p class="lamp-text">
+                {%- for line in visit.draft_lamp.replace('。', '。\n').split('\n') if line.strip() -%}
+                  <span class="lamp-line" style="--i: {{ loop.index0 }}">{{ line }}</span>
+                {%- endfor -%}
+              </p>
+            </div>
           </div>
           <form method="post" action="{{ url_for('shrine.plea', visit_id=visit.id) }}">
             {{ form.hidden_tag() }}
