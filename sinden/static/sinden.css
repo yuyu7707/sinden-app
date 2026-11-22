@@ -1327,3 +1327,41 @@ button.reflect-cta:disabled { animation: none; opacity: 0.7; }
   50% { box-shadow: inset 0 0 0 2px rgba(255, 240, 200, 0.75), 0 6px 32px rgba(255, 170, 80, 0.72); }
 }
 @media (prefers-reduced-motion: reduce) { button.reflect-cta { animation: none; } }
+
+/* ===== トップページ：どの画面サイズでも、ボタンが切れない・見えにくくならないようにする =====
+   枠の高さを「画面の高さ」に固定せず、中身に合わせて伸びるようにする（はみ出しを切り取らない） */
+.lp-hero {
+  height: auto;
+  max-height: none;
+  min-height: clamp(560px, 100svh, 980px);
+  padding-bottom: 5.5rem; /* 下の「スクロール」の印と、ボタンが重ならない余白 */
+}
+/* 「祠の掟を読む」：写真の明るい所でも、はっきり見える */
+.lp-ghost {
+  color: #fff !important;
+  border-color: rgba(255, 246, 225, 0.85) !important;
+  background: rgba(10, 8, 6, 0.55) !important;
+}
+/* 高さの低い画面（横向きのスマホなど）：文字を小さくして、1画面に収める */
+@media (max-height: 560px) {
+  .lp-hero { min-height: 100svh; padding-bottom: 4.5rem; }
+  .lp-copy { padding-top: 3.4rem; }
+  body.landing:not(.about) .lp-eyebrow { font-size: clamp(1.8rem, 6vw, 2.8rem); margin-bottom: 0.2rem; }
+  body.landing:not(.about) .lp-meaning { display: none; }
+  body.landing:not(.about) .lp-copy h1 { font-size: clamp(1.05rem, 3vw, 1.5rem); line-height: 1.5; margin-bottom: 0.4rem; }
+  .lp-sub { font-size: 0.85rem; line-height: 1.6; }
+  .lp-actions { margin-top: 0.8rem; }
+}
+/* 高さがやや低い縦向きのスマホ（小さい iPhone など） */
+@media (max-height: 700px) and (min-height: 561px) {
+  .lp-copy { padding-top: 4.2rem; }
+  body.landing:not(.about) .lp-eyebrow { margin-bottom: 0.4rem; }
+  .lp-actions { margin-top: 1rem; }
+}
+/* 高さがとても低い横向きのスマホ（高さ420px以下）：説明の2行を省いて、ボタンまで収める */
+@media (max-height: 420px) {
+  .lp-copy { padding-top: 2.6rem; }
+  body.landing:not(.about) .lp-eyebrow { font-size: clamp(1.6rem, 5vw, 2.2rem); }
+  .lp-sub { display: none; }
+  .lp-actions { margin-top: 0.6rem; }
+}
