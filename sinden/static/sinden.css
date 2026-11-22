@@ -1569,7 +1569,32 @@ button.reflect-cta:disabled { animation: none; opacity: 0.7; }
 /* 本：大きな本を背景に、大きな文字 */
 .lamp-stage { width: min(124%, 460px); margin-left: 50%; transform: translateX(-50%); }
 .lamp-pagetext {
-  left: 12%; top: 24%; width: 76%; height: 54%;
-  font-size: 1.25rem;
+  left: 11%; top: 27%; width: 78%; height: 54%;
+  font-size: 1.5rem;
 }
 .lamp-stage .lamp-text { line-height: 1.75; font-weight: 600; }
+
+/* ===== 鏡と本：トップの神殿のように、ふわっと浮き出る。線はうすくして、文字を目立たせる ===== */
+.art-leaves { opacity: 0.6; }
+.mirror-stage, .lamp-stage { animation: art-emerge 2.8s cubic-bezier(0.2, 0.6, 0.25, 1) both; }
+@keyframes art-emerge {
+  0% { opacity: 0; transform: translateX(-50%) translateY(8%) scale(0.82); }
+  45% { opacity: 0.55; }
+  100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+/* 浮き出るあいだ、うしろに、あたたかい光がともる */
+.mirror-stage::before, .lamp-stage::before {
+  content: ""; position: absolute; inset: -6%; z-index: -1; pointer-events: none; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 214, 150, 0.6) 0%, rgba(255, 214, 150, 0) 66%);
+  animation: art-halo 3.2s ease-out both;
+}
+@keyframes art-halo { 0% { opacity: 0; transform: scale(0.5); } 55% { opacity: 1; } 100% { opacity: 0; transform: scale(1.15); } }
+/* 文字は、鏡と本が浮き出たあとに、現れる */
+.mirror-card .mirror-text { animation-delay: 1.9s; }
+.mirror-glass .mirror-fog { animation-delay: 0.9s; }
+.lamp-stage .art-page { animation-delay: calc(1.7s + var(--n, 0) * 0.3s); }
+.lamp-stage .lamp-line { animation-delay: calc(3.6s + var(--i, 0) * 0.55s); }
+@media (prefers-reduced-motion: reduce) {
+  .mirror-stage, .lamp-stage { animation: none; }
+  .mirror-stage::before, .lamp-stage::before { display: none; }
+}
