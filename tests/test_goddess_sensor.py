@@ -225,3 +225,14 @@ def test_bubbles_do_not_leak_mirror_or_lamp(aoi, hikaru, login_as, fake_ai):
     speaker.post(f"/shrine/{visit.id}/plea", data={"body": "遅くて不安だった"})
     theirs = listener.get(f"/shrine/{visit.id}").get_data(as_text=True)
     assert "鏡：" not in theirs and "灯：" not in theirs
+
+
+def test_newest_bubble_is_on_top(aoi, hikaru, login_as):
+    visit, a, h = open_shrine(aoi, hikaru, login_as)
+    first, second = speaker_and_listener(visit, aoi, a, h)
+    first.post(f"/shrine/{visit.id}/plea", data={"body": "ひとつ目の言葉"})
+    second.post(f"/shrine/{visit.id}/plea", data={"body": "ふたつ目の言葉"})
+    for client in (first, second):
+        html = client.get(f"/shrine/{visit.id}").get_data(as_text=True)
+        # 新しい言葉（ふたつ目）が、先に出る
+        assert html.index("ふたつ目の言葉") < html.index("ひとつ目の言葉")

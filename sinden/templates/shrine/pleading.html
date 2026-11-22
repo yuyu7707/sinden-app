@@ -172,7 +172,8 @@
   <h3>祠に響いた言葉</h3>
   {# チャットのような吹き出し：自分は右、相手は左。届けた言葉だけ（鏡と灯は、ここには出ない） #}
   <ol class="pleas bubbles">
-    {% for p in visit.pleas %}
+    {# 新しい言葉が、いちばん上に来る #}
+    {% for p in visit.pleas|reverse %}
       <li class="{% if p.user_id == current_user.id %}mine{% else %}theirs{% endif %}{% if p.source == 'reaction' %} reaction{% endif %}">
         <small class="bubble-name">{{ 'あなた' if p.user_id == current_user.id else p.user.name }}</small>
         <p class="bubble">{{ p.body }}</p>
