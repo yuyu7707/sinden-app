@@ -1567,10 +1567,10 @@ button.reflect-cta:disabled { animation: none; opacity: 0.7; }
 .mirror-stage .art-mist { opacity: 0.4; }
 
 /* 本：大きな本を背景に、大きな文字 */
-.lamp-stage { width: min(130%, 500px); aspect-ratio: 240 / 300; margin-left: 50%; transform: translateX(-50%); }
+.lamp-stage { width: min(130%, 500px); aspect-ratio: 240 / 330; margin-left: 50%; transform: translateX(-50%); }
 .lamp-pagetext {
-  left: 15%; top: 19%; width: 70%; height: 47%;
-  font-size: 1.3rem;
+  left: 15%; top: 17%; width: 70%; height: 55%;
+  font-size: 1.5rem;
 }
 .lamp-stage .lamp-text { line-height: 1.75; font-weight: 600; }
 
