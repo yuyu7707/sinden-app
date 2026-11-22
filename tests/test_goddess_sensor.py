@@ -195,3 +195,14 @@ def test_mirror_and_lamp_animations_keep_the_text(aoi, hikaru, login_as, fake_ai
     assert html.count("lamp-page") == 5
     # 飾りがあっても、本文は消えない
     assert "鏡：遅くて不安だっ" in html and "灯：遅くて不安だった" in html
+
+
+def test_mirror_and_lamp_illustrations_are_shown(aoi, hikaru, login_as, fake_ai):
+    visit, a, h = open_shrine(aoi, hikaru, login_as)
+    speaker, _ = speaker_and_listener(visit, aoi, a, h)
+    speaker.post(f"/shrine/{visit.id}/reflect", data={"body": "遅くて不安だった"})
+    html = speaker.get(f"/shrine/{visit.id}").get_data(as_text=True)
+    assert 'class="art-mirror"' in html and "art-ghost" in html
+    assert 'class="art-lamp"' in html and html.count("art-page") >= 3
+    # 絵があっても、本文は消えない
+    assert "鏡：遅くて不安だっ" in html and "灯：遅くて不安だった" in html

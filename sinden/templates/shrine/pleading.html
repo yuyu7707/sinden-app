@@ -109,6 +109,7 @@
         <span class="mirror-fx mirror-fog" aria-hidden="true"></span>
         <h3>女神の鏡</h3>
         <p><small>あなたの訴えを、肯定も否定もせずに映し返しています。</small></p>
+        {% include "shrine/_art_mirror.html" %}
         {% if visit.draft_mirror %}
           <p class="mirror-text">{{ visit.draft_mirror }}</p>
         {% elif visit.draft_note %}
@@ -125,6 +126,7 @@
         <section class="lamp-card">
           <h3><span class="lamp-flame" aria-hidden="true"></span>ことばの灯</h3>
           <p><small>あなたの気持ちはそのままに、相手に届きやすい言い方の案です。使うかどうかは、あなたが決めます。</small></p>
+          {% include "shrine/_art_lamp.html" %}
           {# 本の表紙が開いて、やさしい言葉が、1行ずつ浮かんでくる #}
           <div class="lamp-book">
             <span class="lamp-cover lamp-cover-left" aria-hidden="true"></span>

@@ -1430,3 +1430,53 @@ button.reflect-cta:disabled { animation: none; opacity: 0.7; }
   .mirror-fx, .lamp-page, .lamp-cover { display: none; }
   .mirror-card .mirror-text, .lamp-line, .lamp-card { animation: none; }
 }
+
+/* ===== 鏡と灯の絵（この祠のために描いた絵）。動きは、回転・透明度・大きさだけ ===== */
+.art-mirror { display: block; width: 150px; max-width: 55%; height: auto; margin: 0.4rem auto 0.6rem; position: relative; z-index: 1; }
+.art-lamp { display: block; width: 200px; max-width: 70%; height: auto; margin: 0.2rem auto 0.4rem; }
+.art-mist { transform-box: fill-box; transform-origin: center; }
+.art-mist-a { animation: art-spin 16s linear infinite; }
+.art-mist-b { animation: art-spin 11s linear infinite reverse; }
+@keyframes art-spin { to { transform: rotate(360deg); } }
+.art-ghost { animation: art-ghost 5.5s ease-in-out infinite; }
+@keyframes art-ghost { 0%, 100% { opacity: 0.1; } 50% { opacity: 0.75; } }
+.art-star { animation: art-twinkle 2.6s ease-in-out infinite; }
+.art-star-2 { animation-delay: 0.8s; }
+.art-star-3 { animation-delay: 1.6s; }
+@keyframes art-twinkle { 0%, 100% { opacity: 0.1; } 50% { opacity: 1; } }
+/* 炎と光 */
+.art-flame { transform-box: fill-box; transform-origin: 50% 100%; animation: art-flame 2.2s ease-in-out infinite; }
+@keyframes art-flame {
+  0%, 100% { transform: scale(1, 1) rotate(0deg); }
+  30% { transform: scale(0.92, 1.1) rotate(-4deg); }
+  65% { transform: scale(1.06, 0.94) rotate(4deg); }
+}
+.art-glow { animation: art-glow 2.2s ease-in-out infinite; }
+@keyframes art-glow { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+.art-spark { animation: art-rise 3.2s ease-in infinite; opacity: 0; }
+.art-spark-2 { animation-delay: 1s; }
+.art-spark-3 { animation-delay: 2s; }
+@keyframes art-rise {
+  0% { opacity: 0; transform: translateY(8px); }
+  30% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-16px); }
+}
+/* 本のページが、ひとりでにめくれ続ける（右のページが、背骨を軸に、左へ返る） */
+.art-page {
+  transform-box: view-box; transform-origin: 120px 90px;
+  animation: art-turn 5.4s ease-in-out infinite;
+  animation-delay: calc(var(--n, 0) * 0.55s);
+}
+@keyframes art-turn {
+  0%, 12% { transform: scaleX(1) translateY(0); opacity: 1; }
+  30% { transform: scaleX(0.35) translateY(-9px); opacity: 1; }
+  46% { transform: scaleX(-0.35) translateY(-9px); opacity: 1; }
+  62% { transform: scaleX(-1) translateY(0); opacity: 1; }
+  74%, 100% { transform: scaleX(-1) translateY(0); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .art-mist, .art-ghost, .art-star, .art-flame, .art-glow, .art-spark, .art-page { animation: none; }
+  .art-ghost { opacity: 0.35; }
+  .art-star { opacity: 0.7; }
+  .art-spark { opacity: 0; }
+}
