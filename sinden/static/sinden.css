@@ -1546,3 +1546,30 @@ button.reflect-cta:disabled { animation: none; opacity: 0.7; }
   .mirror-card .mirror-text, .mirror-wait-text, .lamp-stage .lamp-line, .lamp-stage .art-page { animation: none; }
   .lamp-stage .art-page { opacity: 0; }
 }
+
+/* ===== 文字を大きく：絵は大きくはみ出してよい。文字は、絵の手前に、大きく出す ===== */
+.reflection { overflow-x: clip; }
+@supports not (overflow-x: clip) { .reflection { overflow-x: hidden; } }
+
+/* 鏡：大きな鏡の前に、大きな文字 */
+.mirror-stage { width: min(112%, 400px); margin-left: 50%; transform: translateX(-50%); }
+.mirror-glass {
+  left: 11%; right: 11%; top: 18%; bottom: 18%; width: auto; height: auto;
+  border-radius: 0; overflow: visible; isolation: isolate;
+  padding: 0; font-size: 1.3rem;
+}
+.mirror-glass::before {
+  content: ""; position: absolute; inset: -8% -4%; z-index: -1; pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(255, 253, 244, 0.95) 0%, rgba(255, 253, 244, 0.82) 48%, rgba(255, 253, 244, 0) 76%);
+}
+.mirror-stage .mirror-text, .mirror-wait-text { line-height: 1.7; font-weight: 600; }
+.mirror-glass .mirror-fog { inset: -10%; border-radius: 50%; }
+.mirror-stage .art-mist { opacity: 0.4; }
+
+/* 本：大きな本を背景に、大きな文字 */
+.lamp-stage { width: min(124%, 460px); margin-left: 50%; transform: translateX(-50%); }
+.lamp-pagetext {
+  left: 12%; top: 24%; width: 76%; height: 54%;
+  font-size: 1.25rem;
+}
+.lamp-stage .lamp-text { line-height: 1.75; font-weight: 600; }
