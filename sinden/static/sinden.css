@@ -1567,10 +1567,10 @@ button.reflect-cta:disabled { animation: none; opacity: 0.7; }
 .mirror-stage .art-mist { opacity: 0.4; }
 
 /* 本：大きな本を背景に、大きな文字 */
-.lamp-stage { width: min(124%, 460px); margin-left: 50%; transform: translateX(-50%); }
+.lamp-stage { width: min(130%, 500px); aspect-ratio: 240 / 240; margin-left: 50%; transform: translateX(-50%); }
 .lamp-pagetext {
-  left: 11%; top: 27%; width: 78%; height: 54%;
-  font-size: 1.5rem;
+  left: 15%; top: 27%; width: 70%; height: 50%;
+  font-size: 1.3rem;
 }
 .lamp-stage .lamp-text { line-height: 1.75; font-weight: 600; }
 
@@ -1598,3 +1598,27 @@ button.reflect-cta:disabled { animation: none; opacity: 0.7; }
   .mirror-stage, .lamp-stage { animation: none; }
   .mirror-stage::before, .lamp-stage::before { display: none; }
 }
+
+/* ===== 祠に響いた言葉：チャットのような吹き出し（自分は右、相手は左） ===== */
+.pleas.bubbles { display: flex; flex-direction: column; gap: 1rem; margin: 0.6rem 0 1.2rem; }
+.pleas.bubbles li { border-left: 0; padding: 0; margin: 0; display: flex; flex-direction: column; max-width: 86%; animation: bubble-in 0.6s ease both; }
+.pleas.bubbles li.mine { align-self: flex-end; align-items: flex-end; }
+.pleas.bubbles li.theirs { align-self: flex-start; align-items: flex-start; }
+.bubble-name { font-size: 0.8rem; color: var(--stone); margin: 0 0.5rem 0.2rem; }
+.pleas.bubbles .bubble {
+  margin: 0; padding: 0.75rem 1.05rem; font-size: 1.05rem; line-height: 1.75;
+  white-space: pre-wrap; overflow-wrap: anywhere; box-shadow: 0 1px 6px rgba(60, 40, 15, 0.12);
+}
+.pleas.bubbles li.mine .bubble {
+  background: linear-gradient(135deg, #f6dfae, #ecc984); color: #2b1a06;
+  border-radius: 20px 20px 4px 20px;
+}
+.pleas.bubbles li.theirs .bubble {
+  background: #e9edf4; color: #1f2a40;
+  border-radius: 20px 20px 20px 4px;
+}
+.pleas.bubbles li.reaction .bubble { font-style: italic; font-size: 0.95rem; opacity: 0.92; }
+.theme-night .pleas.bubbles li.theirs .bubble { background: #2a3350; color: #f0ead8; }
+.theme-night .pleas.bubbles li.mine .bubble { background: linear-gradient(135deg, #7a5a22, #a07a30); color: #fff6e0; }
+@keyframes bubble-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .pleas.bubbles li { animation: none; } }
